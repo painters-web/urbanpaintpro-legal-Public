@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0D9488">
+    <title>My Profile | UrbanPaintPro Partner</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --p: #0D9488; --p-light: #14B8A6; --bg: #F0FDFA; --text: #134E4A; --white: #FFFFFF; --error: #EF4444; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
+
+        .header {
+            background: linear-gradient(135deg, var(--p), var(--p-light));
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: var(--p);
+            position: relative;
+        }
+        .edit-photo {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 35px;
+            height: 35px;
+            background: var(--p);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .profile-name { font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; }
+        .profile-category {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 0.85rem;
+        }
+
+        /* Rating Card */
+        .rating-card {
+            background: white;
+            margin: -20px 20px 20px;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        .rating-item h3 { font-size: 1.5rem; color: var(--p); margin-bottom: 5px; }
+        .rating-item p { font-size: 0.8rem; color: #64748B; }
+
+        /* Menu Items */
+        .menu-section { padding: 0 20px; margin-bottom: 20px; }
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #64748B;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .menu-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px;
+            border-bottom: 1px solid #F1F5F9;
+            cursor: pointer;
+        }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-icon {
+            width: 40px;
+            height: 40px;
+            background: #F0FDFA;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--p);
+        }
+        .menu-text { flex: 1; }
+        .menu-text h4 { font-size: 0.95rem; margin-bottom: 3px; }
+        .menu-text p { font-size: 0.8rem; color: #64748B; }
+        .menu-arrow { color: #CBD5E1; }
+
+        /* Logout Button */
+        .logout-btn {
+            margin: 20px;
+            width: calc(100% - 40px);
+            padding: 16px;
+            background: #FEE2E2;
+            color: var(--error);
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Bottom Nav */
+        .nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 75px;
+            background: white;
+            border-top: 1px solid #CCFBF1;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+        .nav-item {
+            text-align: center;
+            color: #94A3B8;
+            font-size: 0.7rem;
+            font-weight: 600;
+            width: 60px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 12px;
+        }
+        .nav-item.active { color: var(--p); background: #F0FDFA; }
+        .nav-item i { display: block; font-size: 1.3rem; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="profile-avatar">
+            <i class="fa-solid fa-user-tie"></i>
+            <div class="edit-photo" onclick="document.getElementById('fileInput').click()">
+                <i class="fa-solid fa-camera"></i>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="uploadPhoto(this)">
+        </div>
+        <div class="profile-name" id="profileName">Loading...</div>
+        <div class="profile-category" id="profileCategory">Loading...</div>
+    </div>
+
+    <div class="rating-card">
+        <div class="rating-item">
+            <h3 id="ratingValue">0★</h3>
+            <p>Rating</p>
+        </div>
+        <div class="rating-item">
+            <h3 id="jobsValue">0</h3>
+            <p>Jobs Done</p>
+        </div>
+        <div class="rating-item">
+            <h3 id="earningsValue">₹0</h3>
+            <p>Earned</p>
+        </div>
+    </div>
+
+    <div class="menu-section">
+        <div class="section-title">Account</div>
+        <div class="menu-card">
+            <div class="menu-item" onclick="editProfile()">
+                <div class="menu-icon"><i class="fa-solid fa-user-pen"></i></div>
+                <div class="menu-text">
+                    <h4>Edit Profile</h4>
+                    <p>Update your details</p>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+            </div>
+            <div class="menu-item" onclick="editWorkArea()">
+                <div class="menu-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+                <div class="menu-text">
+                    <h4>Work Area</h4>
+                    <p id="workAreaText">Delhi, Noida</p>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+            </div>
+            <div class="menu-item" onclick="manageSkills()">
+                <div class="menu-icon"><i class="fa-solid fa-tools"></i></div>
+                <div class="menu-text">
+                    <h4>Skills & Services</h4>
+                    <p id="skillsText">Painting, Waterproofing</p>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="menu-section">
+        <div class="section-title">Preferences</div>
+        <div class="menu-card">
+            <div class="menu-item">
+                <div class="menu-icon"><i class="fa-solid fa-bell"></i></div>
+                <div class="menu-text">
+                    <h4>Notifications</h4>
+                    <p>Lead alerts & updates</p>
+                </div>
+                <i class="fa-solid fa-toggle-on" style="color: var(--p); font-size: 1.5rem;"></i>
+            </div>
+            <div class="menu-item">
+                <div class="menu-icon"><i class="fa-solid fa-moon"></i></div>
+                <div class="menu-text">
+                    <h4>Dark Mode</h4>
+                    <p>Coming soon</p>
+                </div>
+                <i class="fa-solid fa-toggle-off" style="color: #CBD5E1; font-size: 1.5rem;"></i>
+            </div>
+            <div class="menu-item" onclick="window.location.href='partner-support.html'">
+                <div class="menu-icon"><i class="fa-solid fa-headset"></i></div>
+                <div class="menu-text">
+                    <h4>Help & Support</h4>
+                    <p>Contact us</p>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+            </div>
+        </div>
+    </div>
+
+    <button class="logout-btn" onclick="logout()">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+    </button>
+
+    <div class="nav">
+        <div class="nav-item" onclick="window.location.href='partner-dashboard.html'">
+            <i class="fa-solid fa-house"></i>Home
+        </div>
+        <div class="nav-item" onclick="window.location.href='partner-leads.html'">
+            <i class="fa-solid fa-bolt"></i>Leads
+        </div>
+        <div class="nav-item" onclick="window.location.href='partner-jobs.html'">
+            <i class="fa-solid fa-briefcase"></i>Jobs
+        </div>
+        <div class="nav-item active" onclick="window.location.href='partner-profile.html'">
+            <i class="fa-solid fa-user"></i>Profile
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCmqBL6a0muExq2qBsSR6M3C_8AyXcJ2k8",
+            authDomain: "urban-paint-pro.firebaseapp.com",
+            databaseURL: "https://urban-paint-pro-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "urban-paint-pro",
+            storageBucket: "urban-paint-pro.firebasestorage.app",
+            messagingSenderId: "929763117480",
+            appId: "1:929763117480:web:560057baeb12672078b59d"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const storage = firebase.storage();
+
+        let partnerData = JSON.parse(localStorage.getItem('partnerData'));
+        if(!partnerData) window.location.href = 'partner-index.html';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfile();
+        });
+
+        function loadProfile() {
+            db.ref('partners/' + partnerData.id).once('value')
+                .then(snapshot => {
+                    const data = snapshot.val();
+                    document.getElementById('profileName').textContent = data.name;
+                    document.getElementById('profileCategory').textContent = data.category.charAt(0).toUpperCase() + data.category.slice(1) + ' Partner';
+                    document.getElementById('ratingValue').textContent = (data.rating || 0) + '★';
+                    document.getElementById('jobsValue').textContent = data.jobsCompleted || 0;
+                    document.getElementById('earningsValue').textContent = '₹' + (data.earnings || 0);
+                    document.getElementById('workAreaText').textContent = data.city || 'Not set';
+                });
+        }
+
+        function uploadPhoto(input) {
+            const file = input.files[0];
+            if(!file) return;
+            
+            const storageRef = storage.ref(`partners/${partnerData.id}/profile.jpg`);
+            storageRef.put(file).then(() => {
+                alert('Photo updated!');
+            });
+        }
+
+        function editProfile() {
+            const newName = prompt('Enter your name:', partnerData.name);
+            if(newName) {
+                db.ref('partners/' + partnerData.id + '/name').set(newName);
+                loadProfile();
+            }
+        }
+
+        function editWorkArea() {
+            const newCity = prompt('Enter your work city:', partnerData.city);
+            if(newCity) {
+                db.ref('partners/' + partnerData.id + '/city').set(newCity.toLowerCase());
+                loadProfile();
+            }
+        }
+
+        function manageSkills() {
+            alert('Skills: ' + partnerData.category);
+        }
+
+        function logout() {
+            if(confirm('Logout from partner app?')) {
+                localStorage.removeItem('partnerData');
+                window.location.href = 'partner-index.html';
+            }
+        }
+    </script>
+</body>
+</html>

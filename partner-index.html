@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0D9488">
+    <title>Partner Login | UrbanPaintPro</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --p: #0D9488; --p-light: #14B8A6; --bg: #F0FDFA; --text: #134E4A; --white: #FFFFFF; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        .container { padding: 20px; max-width: 480px; margin: 0 auto; }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--p), var(--p-light));
+            color: white;
+            padding: 40px 20px;
+            border-radius: 0 0 30px 30px;
+            text-align: center;
+            margin: -20px -20px 30px;
+        }
+        .hero-icon { font-size: 4rem; margin-bottom: 15px; }
+        .hero h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 10px; }
+        .hero p { opacity: 0.9; font-size: 0.95rem; }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(13,148,136,0.1);
+            margin-bottom: 25px;
+        }
+        .stat-item { text-align: center; }
+        .stat-number { font-size: 1.5rem; font-weight: 800; color: var(--p); }
+        .stat-label { font-size: 0.75rem; color: #64748B; margin-top: 5px; }
+
+        /* Auth Card */
+        .auth-card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .auth-tabs {
+            display: flex;
+            background: #F1F5F9;
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 25px;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+            background: transparent;
+            color: #64748B;
+        }
+        .auth-tab.active {
+            background: white;
+            color: var(--p);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: 0.2s;
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: var(--p);
+            background: #F0FDFA;
+        }
+        .form-input-icon {
+            position: relative;
+        }
+        .form-input-icon i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--p);
+        }
+        .form-input-icon input {
+            padding-left: 45px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--p), var(--p-light));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.2s;
+        }
+        .btn-primary:active { transform: scale(0.98); }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            color: #94A3B8;
+            font-size: 0.85rem;
+            position: relative;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #E2E8F0;
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        .google-btn {
+            width: 100%;
+            padding: 14px;
+            background: white;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Category Selection (for register) */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .category-item {
+            padding: 15px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .category-item i {
+            font-size: 1.5rem;
+            color: var(--p);
+            margin-bottom: 8px;
+            display: block;
+        }
+        .category-item.selected {
+            border-color: var(--p);
+            background: #F0FDFA;
+        }
+        .category-item span {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        /* Features */
+        .features {
+            margin-top: 30px;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+        .feature-icon {
+            width: 45px;
+            height: 45px;
+            background: #F0FDFA;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--p);
+            font-size: 1.2rem;
+        }
+        .feature-text h4 { font-size: 0.95rem; margin-bottom: 3px; }
+        .feature-text p { font-size: 0.8rem; color: #64748B; }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .toast {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.4s;
+            pointer-events: all;
+            border-left: 4px solid var(--p);
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.error { border-left-color: #EF4444; }
+        .toast.success { border-left-color: #22C55E; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="hero">
+            <div class="hero-icon">👷‍♂️</div>
+            <h1>Partner with Us</h1>
+            <p>Join 5000+ service professionals earning with UrbanPaintPro</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number">50K+</div>
+                <div class="stat-label">Monthly Jobs</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">₹45K</div>
+                <div class="stat-label">Avg Income</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">4.8★</div>
+                <div class="stat-label">Rating</div>
+            </div>
+        </div>
+
+        <div class="auth-card">
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchTab('login')">Login</button>
+                <button class="auth-tab" onclick="switchTab('register')">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <div class="form-input-icon">
+                        <i class="fa-solid fa-phone"></i>
+                        <input type="tel" class="form-input" id="loginPhone" placeholder="+91 98765 43210">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <div class="form-input-icon">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" class="form-input" id="loginPass" placeholder="Enter password">
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="handleLogin()">
+                    <i class="fa-solid fa-arrow-right"></i> Login as Partner
+                </button>
+
+                <div class="divider">OR</div>
+
+                <button class="google-btn" onclick="handleGoogleLogin()">
+                    <img src="https://cdn-icons-png.flaticon.com/512/300/300221.png" width="20"> Continue with Google
+                </button>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-input" id="regName" placeholder="Your full name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" class="form-input" id="regPhone" placeholder="+91 98765 43210">
+                </div>
+                
+                <label class="form-label">Select Your Category</label>
+                <div class="category-grid">
+                    <div class="category-item" onclick="selectCategory(this, 'painting')">
+                        <i class="fa-solid fa-paint-roller"></i>
+                        <span>Painting</span>
+                    </div>
+                    <div class="category-item" onclick="selectCategory(this, 'waterproofing')">
+                        <i class="fa-solid fa-cloud-showers-heavy"></i>
+                        <span>Waterproofing</span>
+                    </div>
+                    <div class="category-item" onclick="selectCategory(this, 'electrician')">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Electrician</span>
+                    </div>
+                    <div class="category-item" onclick="selectCategory(this, 'plumber')">
+                        <i class="fa-solid fa-faucet-drip"></i>
+                        <span>Plumber</span>
+                    </div>
+                    <div class="category-item" onclick="selectCategory(this, 'carpenter')">
+                        <i class="fa-solid fa-hammer"></i>
+                        <span>Carpenter</span>
+                    </div>
+                    <div class="category-item" onclick="selectCategory(this, 'ac')">
+                        <i class="fa-solid fa-snowflake"></i>
+                        <span>AC Repair</span>
+                    </div>
+                    <div class="category-item" onclick="selectCategory(this, 'cleaning')">
+                        <i class="fa-solid fa-broom"></i>
+                        <span>Cleaning</span>
+                    </div>
+                    <div class="category-item" onclick="selectCategory(this, 'pest')">
+                        <i class="fa-solid fa-bug"></i>
+                        <span>Pest Control</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Experience (Years)</label>
+                    <input type="number" class="form-input" id="regExp" placeholder="e.g. 5">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">City</label>
+                    <input type="text" class="form-input" id="regCity" placeholder="e.g. Delhi, Noida">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="regPass" placeholder="Create password">
+                </div>
+
+                <button class="btn-primary" onclick="handleRegister()">
+                    <i class="fa-solid fa-user-plus"></i> Register as Partner
+                </button>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fa-solid fa-wallet"></i></div>
+                <div class="feature-text">
+                    <h4>Weekly Payments</h4>
+                    <p>Direct to your bank account</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+                <div class="feature-text">
+                    <h4>Nearby Jobs</h4>
+                    <p>Work in your preferred area</p>
+                </div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fa-solid fa-headset"></i></div>
+                <div class="feature-text">
+                    <h4>24/7 Support</h4>
+                    <p>We're always here to help</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCmqBL6a0muExq2qBsSR6M3C_8AyXcJ2k8",
+            authDomain: "urban-paint-pro.firebaseapp.com",
+            databaseURL: "https://urban-paint-pro-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "urban-paint-pro",
+            storageBucket: "urban-paint-pro.firebasestorage.app",
+            messagingSenderId: "929763117480",
+            appId: "1:929763117480:web:560057baeb12672078b59d"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let selectedCategory = '';
+
+        function switchTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if(tab === 'login') {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('registerForm').style.display = 'none';
+            } else {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'block';
+            }
+        }
+
+        function selectCategory(el, category) {
+            document.querySelectorAll('.category-item').forEach(item => item.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedCategory = category;
+        }
+
+        function handleLogin() {
+            const phone = document.getElementById('loginPhone').value;
+            const pass = document.getElementById('loginPass').value;
+            
+            if(!phone || !pass) {
+                showToast('Please fill all fields', 'error');
+                return;
+            }
+
+            // Check partner in database
+            db.ref('partners').orderByChild('phone').equalTo(phone).once('value')
+                .then(snapshot => {
+                    if(snapshot.exists()) {
+                        const partner = Object.values(snapshot.val())[0];
+                        if(partner.password === pass) {
+                            localStorage.setItem('partnerData', JSON.stringify(partner));
+                            showToast('Login successful!', 'success');
+                            setTimeout(() => window.location.href = 'partner-dashboard.html', 1000);
+                        } else {
+                            showToast('Invalid password', 'error');
+                        }
+                    } else {
+                        showToast('Partner not found', 'error');
+                    }
+                });
+        }
+
+        function handleGoogleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then(result => {
+                    const user = result.user;
+                    checkPartnerExists(user);
+                })
+                .catch(err => showToast(err.message, 'error'));
+        }
+
+        function checkPartnerExists(user) {
+            db.ref('partners').orderByChild('email').equalTo(user.email).once('value')
+                .then(snapshot => {
+                    if(snapshot.exists()) {
+                        const partner = Object.values(snapshot.val())[0];
+                        localStorage.setItem('partnerData', JSON.stringify(partner));
+                        window.location.href = 'partner-dashboard.html';
+                    } else {
+                        showToast('Please register first', 'error');
+                    }
+                });
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('regName').value;
+            const phone = document.getElementById('regPhone').value;
+            const exp = document.getElementById('regExp').value;
+            const city = document.getElementById('regCity').value;
+            const pass = document.getElementById('regPass').value;
+
+            if(!name || !phone || !selectedCategory || !exp || !city || !pass) {
+                showToast('Please fill all fields', 'error');
+                return;
+            }
+
+            const partnerData = {
+                name,
+                phone,
+                category: selectedCategory,
+                experience: parseInt(exp),
+                city: city.toLowerCase(),
+                password: pass,
+                rating: 0,
+                jobsCompleted: 0,
+                earnings: 0,
+                status: 'pending',
+                createdAt: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            const partnerId = db.ref('partners').push().key;
+            db.ref('partners/' + partnerId).set(partnerData)
+                .then(() => {
+                    showToast('Registration successful! Please login.', 'success');
+                    switchTab('login');
+                })
+                .catch(err => showToast(err.message, 'error'));
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'error' ? 'fa-circle-xmark' : type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}" 
+                   style="color: ${type === 'error' ? '#EF4444' : type === 'success' ? '#22C55E' : '#0D9488'}; font-size: 1.2rem;"></i>
+                <div style="flex: 1; font-weight: 600;">${message}</div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => toast.remove(), 4000);
+        }
+    </script>
+</body>
+</html>

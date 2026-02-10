@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0D9488">
+    <title>All Leads | UrbanPaintPro Partner</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --p: #0D9488; --p-light: #14B8A6; --bg: #F0FDFA; --text: #134E4A; --white: #FFFFFF; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
+
+        .header {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--p);
+            background: #F0FDFA;
+        }
+        .header h1 { font-size: 1.2rem; }
+
+        /* Filter Tabs */
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            padding: 15px 20px;
+            overflow-x: auto;
+            background: white;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        .filter-tab {
+            padding: 8px 16px;
+            background: #F1F5F9;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748B;
+            cursor: pointer;
+            white-space: nowrap;
+            border: none;
+        }
+        .filter-tab.active {
+            background: var(--p);
+            color: white;
+        }
+
+        /* Leads List */
+        .leads-list { padding: 15px; }
+
+        .lead-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .lead-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .lead-title { font-weight: 700; font-size: 1.1rem; color: #334155; }
+        .lead-amount {
+            background: linear-gradient(135deg, var(--p), var(--p-light));
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .lead-details {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #64748B;
+            font-size: 0.9rem;
+        }
+        .detail-item i { color: var(--p); width: 20px; }
+
+        .lead-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-primary {
+            flex: 1;
+            padding: 12px;
+            background: var(--p);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-secondary {
+            padding: 12px 20px;
+            background: #F1F5F9;
+            color: #475569;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .distance-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #DCFCE7;
+            color: #166534;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94A3B8;
+        }
+        .empty-state i { font-size: 4rem; margin-bottom: 20px; color: #CBD5E1; }
+
+        /* Bottom Nav */
+        .nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 75px;
+            background: white;
+            border-top: 1px solid #CCFBF1;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+        .nav-item {
+            text-align: center;
+            color: #94A3B8;
+            font-size: 0.7rem;
+            font-weight: 600;
+            width: 60px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 12px;
+        }
+        .nav-item.active { color: var(--p); background: #F0FDFA; }
+        .nav-item i { display: block; font-size: 1.3rem; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="back-btn" onclick="window.location.href='partner-dashboard.html'">
+            <i class="fa-solid fa-arrow-left"></i>
+        </div>
+        <h1>Available Leads</h1>
+    </div>
+
+    <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterLeads('all')">All Leads</button>
+        <button class="filter-tab" onclick="filterLeads('nearby')">Nearby</button>
+        <button class="filter-tab" onclick="filterLeads('highvalue')">High Value</button>
+        <button class="filter-tab" onclick="filterLeads('urgent')">Urgent</button>
+    </div>
+
+    <div class="leads-list" id="leadsList">
+        <div class="empty-state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <p>Loading leads...</p>
+        </div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-item" onclick="window.location.href='partner-dashboard.html'">
+            <i class="fa-solid fa-house"></i>Home
+        </div>
+        <div class="nav-item active" onclick="window.location.href='partner-leads.html'">
+            <i class="fa-solid fa-bolt"></i>Leads
+        </div>
+        <div class="nav-item" onclick="window.location.href='partner-jobs.html'">
+            <i class="fa-solid fa-briefcase"></i>Jobs
+        </div>
+        <div class="nav-item" onclick="window.location.href='partner-profile.html'">
+            <i class="fa-solid fa-user"></i>Profile
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCmqBL6a0muExq2qBsSR6M3C_8AyXcJ2k8",
+            authDomain: "urban-paint-pro.firebaseapp.com",
+            databaseURL: "https://urban-paint-pro-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "urban-paint-pro",
+            storageBucket: "urban-paint-pro.firebasestorage.app",
+            messagingSenderId: "929763117480",
+            appId: "1:929763117480:web:560057baeb12672078b59d"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let partnerData = JSON.parse(localStorage.getItem('partnerData'));
+        if(!partnerData) window.location.href = 'partner-index.html';
+
+        let allLeads = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAllLeads();
+        });
+
+        function loadAllLeads() {
+            db.ref('orders')
+                .orderByChild('status')
+                .equalTo('pending')
+                .once('value')
+                .then(snapshot => {
+                    allLeads = [];
+                    snapshot.forEach(child => {
+                        const order = child.val();
+                        if(order.category === partnerData.category) {
+                            allLeads.push({ id: child.key, ...order });
+                        }
+                    });
+                    displayLeads(allLeads);
+                });
+        }
+
+        function displayLeads(leads) {
+            const container = document.getElementById('leadsList');
+            
+            if(leads.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-inbox"></i>
+                        <p>No leads available right now</p>
+                        <p style="font-size: 0.85rem;">Check back later or try different filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = leads.map(lead => `
+                <div class="lead-card">
+                    <div class="lead-header">
+                        <div>
+                            <div class="lead-title">${lead.service}</div>
+                            <span class="distance-badge">
+                                <i class="fa-solid fa-location-arrow"></i> ${Math.floor(Math.random() * 5) + 1} km away
+                            </span>
+                        </div>
+                        <div class="lead-amount">₹${lead.total}</div>
+                    </div>
+                    
+                    <div class="lead-details">
+                        <div class="detail-item">
+                            <i class="fa-solid fa-user"></i>
+                            <span>${lead.customer.name}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <span>${lead.customer.address}, ${lead.customer.area}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fa-regular fa-calendar"></i>
+                            <span>${lead.slot?.date || 'Flexible'} • ${lead.slot?.time || 'Anytime'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span>${lead.details?.length || 1} items • ${lead.type || 'Service'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="lead-actions">
+                        <button class="btn-primary" onclick="acceptLead('${lead.id}')">
+                            <i class="fa-solid fa-check"></i> Accept Lead
+                        </button>
+                        <button class="btn-secondary" onclick="viewDetails('${lead.id}')">
+                            Details
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterLeads(type) {
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            let filtered = allLeads;
+            
+            if(type === 'nearby') {
+                filtered = allLeads.slice(0, 3); // Mock nearby filter
+            } else if(type === 'highvalue') {
+                filtered = allLeads.filter(l => l.total > 2000);
+            } else if(type === 'urgent') {
+                filtered = allLeads.filter(l => l.slot?.date === 'Today');
+            }
+            
+            displayLeads(filtered);
+        }
+
+        function acceptLead(leadId) {
+            db.ref('orders/' + leadId).update({
+                status: 'accepted',
+                assignedPartner: {
+                    id: partnerData.id,
+                    name: partnerData.name,
+                    phone: partnerData.phone
+                }
+            }).then(() => {
+                alert('Lead accepted! Check My Jobs.');
+                loadAllLeads();
+            });
+        }
+
+        function viewDetails(leadId) {
+            // Show modal with full details
+            const lead = allLeads.find(l => l.id === leadId);
+            alert(`Service: ${lead.service}\nAmount: ₹${lead.total}\nAddress: ${lead.customer.address}\nPhone: ${lead.customer.phone}`);
+        }
+    </script>
+</body>
+</html>

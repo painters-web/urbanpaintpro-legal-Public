@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0D9488">
+    <title>Partner Dashboard | UrbanPaintPro</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --p: #0D9488; --p-light: #14B8A6; --bg: #F0FDFA; --text: #134E4A; --white: #FFFFFF; --success: #22C55E; --warning: #F59E0B; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--p), var(--p-light));
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .greeting h2 { font-size: 1.3rem; margin-bottom: 3px; }
+        .greeting p { opacity: 0.9; font-size: 0.85rem; }
+        .profile-btn {
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* Status Toggle */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,255,255,0.15);
+            padding: 12px 15px;
+            border-radius: 12px;
+        }
+        .status-text { font-weight: 600; }
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .toggle-switch.active { background: var(--success); }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+        }
+        .toggle-switch.active::after { left: 26px; }
+
+        /* Earnings Card */
+        .earnings-card {
+            background: white;
+            margin: -30px 15px 20px;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(13,148,136,0.15);
+            position: relative;
+            z-index: 10;
+        }
+        .earnings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .earnings-label { color: #64748B; font-size: 0.9rem; }
+        .withdraw-btn {
+            background: var(--p);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .earnings-amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--p);
+            margin-bottom: 15px;
+        }
+        .earnings-stats {
+            display: flex;
+            gap: 20px;
+        }
+        .stat-box {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: #F0FDFA;
+            border-radius: 12px;
+        }
+        .stat-value { font-weight: 700; color: var(--p); }
+        .stat-label { font-size: 0.75rem; color: #64748B; }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 0 15px;
+            margin-bottom: 25px;
+        }
+        .action-item {
+            background: white;
+            padding: 15px 10px;
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #E2E8F0;
+        }
+        .action-item:active { transform: scale(0.95); }
+        .action-icon {
+            width: 45px;
+            height: 45px;
+            background: #F0FDFA;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            color: var(--p);
+            font-size: 1.2rem;
+        }
+        .action-label { font-size: 0.75rem; font-weight: 600; color: #334155; }
+
+        /* New Leads Section */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            margin-bottom: 15px;
+        }
+        .section-title { font-weight: 700; font-size: 1.1rem; }
+        .view-all { color: var(--p); font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+
+        .leads-container { padding: 0 15px; }
+
+        .lead-card {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--p);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .lead-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .lead-service { font-weight: 700; color: #334155; }
+        .lead-price {
+            background: #F0FDFA;
+            color: var(--p);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .lead-location {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748B;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+        }
+        .lead-footer {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-accept {
+            flex: 1;
+            padding: 10px;
+            background: var(--p);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-reject {
+            padding: 10px 15px;
+            background: #FEE2E2;
+            color: #DC2626;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #94A3B8;
+        }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; color: #CBD5E1; }
+
+        /* Bottom Nav */
+        .nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 75px;
+            background: white;
+            border-top: 1px solid #CCFBF1;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+        .nav-item {
+            text-align: center;
+            color: #94A3B8;
+            font-size: 0.7rem;
+            font-weight: 600;
+            width: 60px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 12px;
+        }
+        .nav-item.active { color: var(--p); background: #F0FDFA; }
+        .nav-item i { display: block; font-size: 1.3rem; margin-bottom: 4px; }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+        }
+        .toast {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            animation: slideDown 0.3s;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-top">
+            <div class="greeting">
+                <h2 id="partnerName">Hello Partner! 👋</h2>
+                <p id="partnerCategory">Loading...</p>
+            </div>
+            <div class="profile-btn" onclick="window.location.href='partner-profile.html'">
+                <i class="fa-solid fa-user"></i>
+            </div>
+        </div>
+        <div class="status-bar">
+            <span class="status-text">You are</span>
+            <span id="statusText" style="font-weight: 700;">OFFLINE</span>
+            <div class="toggle-switch" id="statusToggle" onclick="toggleStatus()"></div>
+        </div>
+    </div>
+
+    <div class="earnings-card">
+        <div class="earnings-header">
+            <span class="earnings-label">Total Earnings</span>
+            <button class="withdraw-btn" onclick="window.location.href='partner-wallet.html'">
+                <i class="fa-solid fa-wallet"></i> Withdraw
+            </button>
+        </div>
+        <div class="earnings-amount" id="totalEarnings">₹0</div>
+        <div class="earnings-stats">
+            <div class="stat-box">
+                <div class="stat-value" id="jobsCompleted">0</div>
+                <div class="stat-label">Jobs Done</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="rating">0★</div>
+                <div class="stat-label">Rating</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="thisWeek">₹0</div>
+                <div class="stat-label">This Week</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="quick-actions">
+        <div class="action-item" onclick="window.location.href='partner-leads.html'">
+            <div class="action-icon"><i class="fa-solid fa-bolt"></i></div>
+            <div class="action-label">New Leads</div>
+        </div>
+        <div class="action-item" onclick="window.location.href='partner-jobs.html'">
+            <div class="action-icon"><i class="fa-solid fa-briefcase"></i></div>
+            <div class="action-label">My Jobs</div>
+        </div>
+        <div class="action-item" onclick="window.location.href='partner-wallet.html'">
+            <div class="action-icon"><i class="fa-solid fa-wallet"></i></div>
+            <div class="action-label">Wallet</div>
+        </div>
+        <div class="action-item" onclick="window.location.href='partner-support.html'">
+            <div class="action-icon"><i class="fa-solid fa-headset"></i></div>
+            <div class="action-label">Support</div>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <span class="section-title">🔥 New Leads</span>
+        <span class="view-all" onclick="window.location.href='partner-leads.html'">View All</span>
+    </div>
+
+    <div class="leads-container" id="leadsContainer">
+        <div class="empty-state">
+            <i class="fa-solid fa-inbox"></i>
+            <p>No new leads available</p>
+            <p style="font-size: 0.8rem;">Go ONLINE to receive leads</p>
+        </div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-item active" onclick="window.location.href='partner-dashboard.html'">
+            <i class="fa-solid fa-house"></i>Home
+        </div>
+        <div class="nav-item" onclick="window.location.href='partner-leads.html'">
+            <i class="fa-solid fa-bolt"></i>Leads
+        </div>
+        <div class="nav-item" onclick="window.location.href='partner-jobs.html'">
+            <i class="fa-solid fa-briefcase"></i>Jobs
+        </div>
+        <div class="nav-item" onclick="window.location.href='partner-profile.html'">
+            <i class="fa-solid fa-user"></i>Profile
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCmqBL6a0muExq2qBsSR6M3C_8AyXcJ2k8",
+            authDomain: "urban-paint-pro.firebaseapp.com",
+            databaseURL: "https://urban-paint-pro-default-rtdb.asia-southeast1.firebasedatabase.app/",
+            projectId: "urban-paint-pro",
+            storageBucket: "urban-paint-pro.firebasestorage.app",
+            messagingSenderId: "929763117480",
+            appId: "1:929763117480:web:560057baeb12672078b59d"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let partnerData = JSON.parse(localStorage.getItem('partnerData'));
+        if(!partnerData) window.location.href = 'partner-index.html';
+
+        let isOnline = false;
+        let leadsListener = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPartnerData();
+            updateStats();
+        });
+
+        function loadPartnerData() {
+            document.getElementById('partnerName').textContent = `Hello ${partnerData.name.split(' ')[0]}! 👋`;
+            document.getElementById('partnerCategory').textContent = partnerData.category.charAt(0).toUpperCase() + partnerData.category.slice(1) + ' Partner';
+            document.getElementById('totalEarnings').textContent = '₹' + (partnerData.earnings || 0).toLocaleString();
+            document.getElementById('jobsCompleted').textContent = partnerData.jobsCompleted || 0;
+            document.getElementById('rating').textContent = (partnerData.rating || 0) + '★';
+        }
+
+        function toggleStatus() {
+            isOnline = !isOnline;
+            const toggle = document.getElementById('statusToggle');
+            const statusText = document.getElementById('statusText');
+            
+            if(isOnline) {
+                toggle.classList.add('active');
+                statusText.textContent = 'ONLINE';
+                statusText.style.color = '#22C55E';
+                showToast('You are now ONLINE. Ready to receive leads!', 'success');
+                startListeningForLeads();
+            } else {
+                toggle.classList.remove('active');
+                statusText.textContent = 'OFFLINE';
+                statusText.style.color = 'white';
+                showToast('You are now OFFLINE', 'info');
+                stopListeningForLeads();
+            }
+        }
+
+        function startListeningForLeads() {
+            // Listen for orders matching partner's category and city
+            leadsListener = db.ref('orders')
+                .orderByChild('status')
+                .equalTo('pending')
+                .on('value', snapshot => {
+                    const leads = [];
+                    snapshot.forEach(child => {
+                        const order = child.val();
+                        if(order.category === partnerData.category && 
+                           order.customer.city === partnerData.city) {
+                            leads.push({ id: child.key, ...order });
+                        }
+                    });
+                    displayLeads(leads.slice(0, 3)); // Show top 3
+                });
+        }
+
+        function stopListeningForLeads() {
+            if(leadsListener) {
+                db.ref('orders').off('value', leadsListener);
+                leadsListener = null;
+            }
+            document.getElementById('leadsContainer').innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-solid fa-inbox"></i>
+                    <p>No new leads available</p>
+                    <p style="font-size: 0.8rem;">Go ONLINE to receive leads</p>
+                </div>
+            `;
+        }
+
+        function displayLeads(leads) {
+            const container = document.getElementById('leadsContainer');
+            
+            if(leads.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-search"></i>
+                        <p>No leads in your area right now</p>
+                        <p style="font-size: 0.8rem;">Check back soon!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = leads.map(lead => `
+                <div class="lead-card">
+                    <div class="lead-header">
+                        <div>
+                            <div class="lead-service">${lead.service}</div>
+                            <div class="lead-location">
+                                <i class="fa-solid fa-location-dot"></i>
+                                ${lead.customer.area}, ${lead.customer.city}
+                            </div>
+                        </div>
+                        <div class="lead-price">₹${lead.total}</div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px; font-size: 0.8rem; color: #64748B;">
+                        <span><i class="fa-regular fa-calendar"></i> ${lead.slot?.date || 'ASAP'}</span>
+                        <span><i class="fa-regular fa-clock"></i> ${lead.slot?.time || 'Flexible'}</span>
+                    </div>
+                    <div class="lead-footer">
+                        <button class="btn-accept" onclick="acceptLead('${lead.id}')">
+                            <i class="fa-solid fa-check"></i> Accept
+                        </button>
+                        <button class="btn-reject" onclick="rejectLead('${lead.id}')">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function acceptLead(leadId) {
+            db.ref('orders/' + leadId).update({
+                status: 'accepted',
+                assignedPartner: {
+                    id: partnerData.id,
+                    name: partnerData.name,
+                    phone: partnerData.phone,
+                    rating: partnerData.rating
+                }
+            }).then(() => {
+                showToast('Lead accepted! Customer will be notified.', 'success');
+                // Add to partner's jobs
+                db.ref(`partners/${partnerData.id}/jobs/${leadId}`).set({
+                    acceptedAt: firebase.database.ServerValue.TIMESTAMP,
+                    status: 'accepted'
+                });
+            });
+        }
+
+        function rejectLead(leadId) {
+            // Just remove from view, don't update order
+            showToast('Lead rejected', 'info');
+        }
+
+        function updateStats() {
+            // Calculate this week's earnings
+            const weekEarnings = Math.floor((partnerData.earnings || 0) * 0.3); // Mock calculation
+            document.getElementById('thisWeek').textContent = '₹' + weekEarnings;
+        }
+
+        function showToast(message, type) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}" 
+                   style="color: ${type === 'success' ? '#22C55E' : '#0D9488'};"></i>
+                <span style="font-weight: 600;">${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>

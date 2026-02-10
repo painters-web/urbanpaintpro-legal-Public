@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0D9488">
+    <title>Support | UrbanPaintPro Partner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --p: #0D9488; --p-light: #14B8A6; --bg: #F0FDFA; --text: #134E4A; --white: #FFFFFF; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
+
+        .header {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--p);
+            background: #F0FDFA;
+        }
+        .header h1 { font-size: 1.2rem; }
+
+        .content { padding: 20px; }
+
+        /* Support Cards */
+        .support-card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .support-card:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .support-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+        }
+        .icon-whatsapp { background: #25D366; }
+        .icon-call { background: var(--p); }
+        .icon-email { background: #EA4335; }
+
+        .support-info { flex: 1; }
+        .support-title { font-weight: 700; margin-bottom: 3px; }
+        .support-desc { font-size: 0.85rem; color: #64748B; }
+
+        /* FAQ Section */
+        .faq-title { font-weight: 700; margin: 30px 0 15px; }
+        .faq-item {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .faq-question {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: 0.3s;
+            color: #64748B;
+            font-size: 0.9rem;
+        }
+        .faq-answer.active { padding: 0 20px 15px; max-height: 200px; }
+
+        /* Bottom Nav */
+        .nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 75px;
+            background: white;
+            border-top: 1px solid #CCFBF1;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+        .nav-item {
+            text-align: center;
+            color: #94A3B8;
+            font-size: 0.7rem;
+            font-weight: 600;
+            width: 60px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 12px;
+        }
+        .nav-item.active { color: var(--p); background: #F0FDFA; }
+        .nav-item i { display: block; font-size: 1.3rem; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="back-btn" onclick="window.location.href='partner-profile.html'">
+            <i class="fa-solid fa-arrow-left"></i>
+        </div>
+        <h1>Help & Support</h1>
+    </div>
+
+    <div class="content">
+        <a href="https://wa.me/919711904092" class="support-card" style="text-decoration: none; color: inherit;">
+            <div class="support-icon icon-whatsapp">
+                <i class="fa-brands fa-whatsapp"></i>
+            </div>
+            <div class="support-info">
+                <div class="support-title">WhatsApp Support</div>
+                <div class="support-desc">Fastest response time</div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color: #CBD5E1;"></i>
+        </a>
+
+        <a href="tel:+919711904092" class="support-card" style="text-decoration: none; color: inherit;">
+            <div class="support-icon icon-call">
+                <i class="fa-solid fa-phone"></i>
+            </div>
+            <div class="support-info">
+                <div class="support-title">Call Helpline</div>
+                <div class="support-desc">+91 97119 04092</div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color: #CBD5E1;"></i>
+        </a>
+
+        <a href="mailto:urbanpaintpro.index@gmail.com" class="support-card" style="text-decoration: none; color: inherit;">
+            <div class="support-icon icon-email">
+                <i class="fa-solid fa-envelope"></i>
+            </div>
+            <div class="support-info">
+                <div class="support-title">Email Support</div>
+                <div class="support-desc">urbanpaintpro.index@gmail.com</div>
+            </div>
+            <i class="fa-solid fa-chevron-right" style="color: #CBD5E1;"></i>
+        </a>
+
+        <div class="faq-title">Frequently Asked Questions</div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>How do I get more leads?</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                Stay online during peak hours (9 AM - 6 PM) and maintain a high rating to get priority leads.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>When will I get paid?</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                Payments are processed every Friday for completed jobs. Minimum withdrawal is ₹100.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>How to improve my rating?</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                Complete jobs on time, communicate professionally with customers, and ask for reviews after successful completion.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFaq(this)">
+                <span>What if customer cancels?</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div class="faq-answer">
+                If customer cancels after you reach the site, you'll receive a cancellation fee of ₹100.
+            </div>
+        </div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-item" onclick="window.location.href='partner-dashboard.html'">
+            <i class="fa-solid fa-house"></i>Home
+        </div>
+        <div class="nav-item" onclick="window.location.href='partner-leads.html'">
+            <i class="fa-solid fa-bolt"></i>Leads
+        </div>
+        <div class="nav-item" onclick="window.location.href='partner-jobs.html'">
+            <i class="fa-solid fa-briefcase"></i>Jobs
+        </div>
+        <div class="nav-item" onclick="window.location.href='partner-profile.html'">
+            <i class="fa-solid fa-user"></i>Profile
+        </div>
+    </div>
+
+    <script>
+        function toggleFaq(element) {
+            const answer = element.nextElementSibling;
+            const icon = element.querySelector('i');
+            
+            document.querySelectorAll('.faq-answer').forEach(a => {
+                if(a !== answer) a.classList.remove('active');
+            });
+            
+            answer.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
