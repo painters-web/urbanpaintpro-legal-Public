@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0D9488">
+<title>My Bookings | Refine Home Painting</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--p:#0D9488;--p-light:#14B8A6;--p-dark:#0F766E;--bg:#F0FDFA;--surface:#FFF;--text:#134E4A;--text2:#64748B;--err:#EF4444;--ok:#22C55E;--warn:#F59E0B;--info:#3B82F6}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Plus Jakarta Sans',sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);padding-bottom:90px}
+
+.header{position:fixed;top:0;width:100%;height:60px;background:var(--surface);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:100;border-bottom:1px solid #F1F5F9}
+.header-title{font-weight:700;font-size:1.1rem}
+.h-actions{display:flex;align-items:center;gap:10px}
+.filter-btn{width:36px;height:36px;border-radius:10px;background:#F0FDFA;display:flex;align-items:center;justify-content:center;color:var(--p);cursor:pointer;border:none}
+
+.content{margin-top:75px;padding:0 16px}
+
+/* Tabs */
+.booking-tabs{display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none;position:sticky;top:60px;background:var(--bg);z-index:99;padding-top:12px}
+.booking-tabs::-webkit-scrollbar{display:none}
+.btab{padding:8px 16px;border-radius:20px;font-size:.85rem;font-weight:600;background:#F1F5F9;color:var(--text2);border:1px solid transparent;cursor:pointer;white-space:nowrap;transition:.2s;border:none}
+.btab.active{background:var(--p);color:#fff}
+
+/* Order Card */
+.order-card{background:var(--surface);border-radius:16px;padding:18px;margin-bottom:14px;border:1px solid #F1F5F9;box-shadow:0 1px 3px rgba(0,0,0,.03);position:relative;overflow:hidden}
+.order-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--p)}
+.order-card.completed::before{background:var(--ok)}
+.order-card.cancelled::before{background:var(--err)}
+.order-card.ongoing::before{background:var(--info)}
+
+.order-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.order-header h4{font-size:1rem;font-weight:700;flex:1;margin-right:10px}
+.order-id{font-size:.75rem;color:var(--text2);margin-top:3px}
+.status-pill{padding:4px 10px;border-radius:20px;font-size:.7rem;font-weight:700;text-transform:uppercase}
+.status-pill.pending{background:#E0F2FE;color:#0369A1}
+.status-pill.assigned{background:#FEF3C7;color:#92400E}
+.status-pill.ongoing{background:#DBEAFE;color:#1D4ED8}
+.status-pill.completed{background:#DCFCE7;color:#166534}
+.status-pill.cancelled{background:#FEE2E2;color:#DC2626}
+
+.order-details{font-size:.85rem;color:var(--text2);margin-bottom:12px}
+.order-details i{width:16px;color:var(--p);margin-right:4px}
+.order-price{font-size:1.1rem;font-weight:800;color:var(--p)}
+
+/* Partner Card */
+.partner-card{background:linear-gradient(135deg,#F0FDFA,#E0F2FE);border-radius:14px;padding:14px;margin:12px 0;display:flex;align-items:center;gap:12px}
+.partner-img{width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--p)}
+.partner-info{flex:1}
+.partner-info h4{font-size:.95rem;font-weight:700}
+.partner-info p{font-size:.8rem;color:var(--text2);margin-top:2px}
+.partner-rating{display:flex;align-items:center;gap:4px;font-size:.8rem;color:#F59E0B;font-weight:700}
+.partner-actions{display:flex;gap:8px}
+.partner-actions button{width:36px;height:36px;border-radius:10px;border:none;background:var(--surface);color:var(--p);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,.05)}
+
+/* OTP Section */
+.otp-section{background:#FEF3C7;border-radius:12px;padding:14px;margin:12px 0;text-align:center}
+.otp-section h4{font-size:.9rem;font-weight:700;color:#92400E;margin-bottom:8px}
+.otp-code{font-size:1.8rem;font-weight:800;color:var(--warn);letter-spacing:8px;font-family:monospace}
+.otp-section p{font-size:.8rem;color:#92400E;margin-top:6px}
+
+/* Action Buttons */
+.btn-row{display:flex;gap:10px;margin-top:12px}
+.btn-row button{flex:1;padding:10px;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;border:none;transition:.2s}
+.btn-primary{background:var(--p);color:#fff}
+.btn-outline{background:#fff;color:var(--p);border:1px solid var(--p)}
+.btn-danger{background:#FEE2E2;color:var(--err);border:1px solid #FECACA}
+.btn-warn{background:#FEF3C7;color:#92400E;border:1px solid #FCD34D}
+
+/* Timeline */
+.timeline{position:relative;padding-left:24px;margin:16px 0}
+.timeline::before{content:'';position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:#E2E8F0}
+.tl-item{position:relative;margin-bottom:16px}
+.tl-item:last-child{margin-bottom:0}
+.tl-dot{position:absolute;left:-21px;top:2px;width:14px;height:14px;border-radius:50%;background:#E2E8F0;border:2px solid #fff;box-shadow:0 0 0 2px #E2E8F0}
+.tl-item.done .tl-dot{background:var(--ok);box-shadow:0 0 0 2px var(--ok)}
+.tl-item.active .tl-dot{background:var(--p);box-shadow:0 0 0 2px var(--p);animation:pulse 1.5s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 2px var(--p)}50%{box-shadow:0 0 0 6px rgba(13,148,136,.2)}100%{box-shadow:0 0 0 2px var(--p)}}
+.tl-text h4{font-size:.9rem;font-weight:700}.tl-text p{font-size:.8rem;color:var(--text2);margin-top:2px}
+
+/* Review Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:99990;display:none;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .3s}
+.overlay.active{display:flex;opacity:1}
+.overlay.ctr{align-items:center;padding:20px}
+.sheet{background:#fff;width:100%;max-width:480px;border-radius:24px 24px 0 0;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+.overlay.active .sheet{transform:translateY(0)}
+.sheet-drag{width:40px;height:4px;background:#E2E8F0;border-radius:2px;margin:12px auto}
+.shead{padding:0 20px 16px;display:flex;align-items:center;justify-content:space-between}
+.shead h3{font-size:1.1rem;font-weight:700}
+.sclose{width:32px;height:32px;border-radius:50%;background:#F1F5F9;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sbody{padding:0 20px 20px;overflow-y:auto;flex:1}
+
+/* Star Rating */
+.star-rating{display:flex;justify-content:center;gap:8px;margin:20px 0}
+.star-rating i{font-size:2rem;color:#E2E8F0;cursor:pointer;transition:.2s}
+.star-rating i.active{color:#F59E0B}
+.star-rating i:hover{color:#FCD34D}
+
+.review-param{margin-bottom:16px}
+.review-param h4{font-size:.9rem;font-weight:600;margin-bottom:8px;color:#475569}
+.param-stars{display:flex;gap:6px}
+.param-stars i{font-size:1.2rem;color:#E2E8F0;cursor:pointer}
+.param-stars i.sel{color:#F59E0B}
+
+.review-tags{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.review-tags button{padding:8px 14px;border:1px solid #E2E8F0;border-radius:20px;background:#fff;font-size:.8rem;font-weight:600;color:#475569;cursor:pointer;transition:.2s}
+.review-tags button.sel{background:#F0FDFA;border-color:var(--p);color:var(--p)}
+
+.tip-options{display:flex;gap:10px;margin:16px 0}
+.tip-btn{flex:1;padding:12px;border:2px solid #E2E8F0;border-radius:12px;background:#fff;font-weight:700;color:var(--text);cursor:pointer;transition:.2s;text-align:center}
+.tip-btn.sel{border-color:var(--p);background:#F0FDFA;color:var(--p)}
+
+/* Empty State */
+.empty{text-align:center;padding:60px 20px;color:var(--text2)}
+.empty i{font-size:3rem;color:#CBD5E1;margin-bottom:15px}
+.empty h3{font-size:1.1rem;color:var(--text);margin-bottom:8px}
+.empty p{font-size:.9rem;margin-bottom:20px}
+.empty button{padding:12px 24px;background:var(--p);color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer}
+
+/* SOS Button */
+.sos-btn{position:fixed;bottom:90px;right:16px;width:56px;height:56px;background:linear-gradient(135deg,var(--err),#DC2626);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.3rem;cursor:pointer;box-shadow:0 6px 20px rgba(239,68,68,.4);z-index:200;animation:sosPulse 2s infinite;border:none}
+@keyframes sosPulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}70%{box-shadow:0 0 0 15px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+
+/* Nav */
+.nav{position:fixed;bottom:0;width:100%;height:68px;background:var(--surface);border-top:1px solid #F1F5F9;display:flex;justify-content:space-around;align-items:center;z-index:100}
+.nav-item{text-align:center;color:#94A3B8;font-size:.65rem;font-weight:700;width:60px;cursor:pointer;padding:6px;border-radius:12px;transition:.2s;border:none;background:none}
+.nav-item.active{color:var(--p);background:#F0FDFA}
+.nav-item i{display:block;font-size:1.2rem;margin-bottom:3px}
+
+/* Toast */
+.toast-wrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:100000;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:92%;max-width:380px}
+.toast{background:#fff;padding:14px 16px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.15);display:flex;align-items:center;gap:12px;transform:translateY(-80px);opacity:0;transition:all .4s cubic-bezier(.32,.72,0,1);pointer-events:all;border-left:4px solid var(--p)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-left-color:var(--ok)}.toast.err{border-left-color:var(--err)}.toast.warn{border-left-color:var(--warn)}
+.toast-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.toast.ok .toast-ico{background:#DCFCE7;color:var(--ok)}.toast.err .toast-ico{background:#FEE2E2;color:var(--err)}.toast.warn .toast-ico{background:#FEF3C7;color:var(--warn)}.toast.inf .toast-ico{background:#F0FDFA;color:var(--p)}
+.toast-tit{font-weight:700;color:#1E293B;font-size:.9rem}.toast-msg{color:var(--text2);font-size:.8rem}
+
+@media(min-width:480px){body{max-width:480px;margin:0 auto}.header,.nav{max-width:480px;left:50%;transform:translateX(-50%)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+<div class="header-title">My Bookings</div>
+<div class="h-actions">
+<button class="filter-btn" onclick="toggleFilter()"><i class="fa-solid fa-filter"></i></button>
+<button class="filter-btn" onclick="goTo('contact.html')"><i class="fa-solid fa-headset"></i></button>
+</div>
+</div>
+
+<div class="booking-tabs">
+<button class="btab active" onclick="filterOrders('all')">All</button>
+<button class="btab" onclick="filterOrders('pending')">Pending</button>
+<button class="btab" onclick="filterOrders('ongoing')">Ongoing</button>
+<button class="btab" onclick="filterOrders('completed')">Completed</button>
+</div>
+
+<div class="content" id="ordersList">
+<div style="text-align:center;padding:40px"><div style="width:40px;height:40px;border:4px solid #CCFBF1;border-top-color:var(--p);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 15px"></div><p style="color:var(--text2)">Loading bookings...</p></div>
+</div>
+
+<!-- Review Sheet -->
+<div class="overlay" id="reviewOverlay">
+<div class="sheet">
+<div class="sheet-drag"></div>
+<div class="shead"><h3>Rate Your Service</h3><button class="sclose" onclick="closeReview()"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="sbody">
+<div style="text-align:center;margin-bottom:10px">
+<img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" style="width:60px;height:60px;border-radius:50%;border:2px solid var(--p)" id="revPartnerImg">
+<h4 style="margin-top:10px" id="revPartnerName">Partner Name</h4>
+<p style="font-size:.85rem;color:var(--text2)">How was your experience?</p>
+</div>
+<div class="star-rating" id="mainStars">
+<i class="fa-solid fa-star" onclick="rateMain(1)"></i>
+<i class="fa-solid fa-star" onclick="rateMain(2)"></i>
+<i class="fa-solid fa-star" onclick="rateMain(3)"></i>
+<i class="fa-solid fa-star" onclick="rateMain(4)"></i>
+<i class="fa-solid fa-star" onclick="rateMain(5)"></i>
+</div>
+<div class="review-param">
+<h4>Punctuality</h4>
+<div class="param-stars" id="punctualityStars"><i class="fa-solid fa-star" onclick="rateParam('punctuality',1)"></i><i class="fa-solid fa-star" onclick="rateParam('punctuality',2)"></i><i class="fa-solid fa-star" onclick="rateParam('punctuality',3)"></i><i class="fa-solid fa-star" onclick="rateParam('punctuality',4)"></i><i class="fa-solid fa-star" onclick="rateParam('punctuality',5)"></i></div>
+</div>
+<div class="review-param">
+<h4>Service Quality</h4>
+<div class="param-stars" id="qualityStars"><i class="fa-solid fa-star" onclick="rateParam('quality',1)"></i><i class="fa-solid fa-star" onclick="rateParam('quality',2)"></i><i class="fa-solid fa-star" onclick="rateParam('quality',3)"></i><i class="fa-solid fa-star" onclick="rateParam('quality',4)"></i><i class="fa-solid fa-star" onclick="rateParam('quality',5)"></i></div>
+</div>
+<div class="review-param">
+<h4>Behaviour</h4>
+<div class="param-stars" id="behaviourStars"><i class="fa-solid fa-star" onclick="rateParam('behaviour',1)"></i><i class="fa-solid fa-star" onclick="rateParam('behaviour',2)"></i><i class="fa-solid fa-star" onclick="rateParam('behaviour',3)"></i><i class="fa-solid fa-star" onclick="rateParam('behaviour',4)"></i><i class="fa-solid fa-star" onclick="rateParam('behaviour',5)"></i></div>
+</div>
+<div class="review-param">
+<h4>Cleanliness</h4>
+<div class="param-stars" id="cleanlinessStars"><i class="fa-solid fa-star" onclick="rateParam('cleanliness',1)"></i><i class="fa-solid fa-star" onclick="rateParam('cleanliness',2)"></i><i class="fa-solid fa-star" onclick="rateParam('cleanliness',3)"></i><i class="fa-solid fa-star" onclick="rateParam('cleanliness',4)"></i><i class="fa-solid fa-star" onclick="rateParam('cleanliness',5)"></i></div>
+</div>
+<div class="review-tags">
+<button onclick="toggleTag(this)">On Time</button>
+<button onclick="toggleTag(this)">Professional</button>
+<button onclick="toggleTag(this)">Good Cleanup</button>
+<button onclick="toggleTag(this)">Skilled Work</button>
+<button onclick="toggleTag(this)">Polite</button>
+<button onclick="toggleTag(this)">Recommended</button>
+</div>
+<div style="margin:16px 0">
+<h4 style="font-size:.9rem;font-weight:600;margin-bottom:10px;color:#475569">Tip your partner (Optional)</h4>
+<div class="tip-options">
+<button class="tip-btn" onclick="selTip(50,this)">Rs 50</button>
+<button class="tip-btn" onclick="selTip(100,this)">Rs 100</button>
+<button class="tip-btn" onclick="selTip(200,this)">Rs 200</button>
+</div>
+</div>
+<textarea placeholder="Write your review (optional)..." style="width:100%;padding:12px;border:2px solid #E2E8F0;border-radius:12px;outline:none;font-size:.9rem;resize:none;height:80px;margin-bottom:16px" id="reviewText"></textarea>
+<button style="width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--p),var(--p-light));color:#fff;font-weight:700;font-size:1rem;cursor:pointer" onclick="submitReview()">Submit Review</button>
+</div>
+</div>
+</div>
+
+<!-- Reschedule Sheet -->
+<div class="overlay" id="reschedOverlay">
+<div class="sheet">
+<div class="sheet-drag"></div>
+<div class="shead"><h3>Reschedule Booking</h3><button class="sclose" onclick="closeResched()"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="sbody">
+<div style="margin-bottom:16px"><label style="display:block;font-weight:600;color:#475569;margin-bottom:10px;font-size:.9rem"><i class="fa-regular fa-calendar" style="color:var(--p);margin-right:6px"></i>Select New Date</label><div class="date-scroll" id="reschedDates"></div></div>
+<label style="display:block;font-weight:600;color:#475569;margin-bottom:10px;font-size:.9rem"><i class="fa-regular fa-clock" style="color:var(--p);margin-right:6px"></i>Select New Time</label>
+<div class="slot-grid" id="reschedSlots" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px"></div>
+<button style="width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--p),var(--p-light));color:#fff;font-weight:700;font-size:1rem;cursor:pointer;margin-top:20px" onclick="confirmResched()">Confirm Reschedule</button>
+</div>
+</div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="overlay ctr" id="cancelOverlay">
+<div style="background:#fff;width:100%;max-width:340px;border-radius:24px;padding:30px 25px;text-align:center;transform:scale(.9);opacity:0;transition:all .3s" id="cancelBox">
+<div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--err),#DC2626);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;margin:0 auto 20px"><i class="fa-solid fa-trash-can"></i></div>
+<h3 style="font-size:1.3rem;font-weight:800;margin-bottom:10px;color:var(--err)">Cancel Booking?</h3>
+<p style="color:var(--text2);font-size:.95rem;margin-bottom:20px;line-height:1.5">Are you sure? This action cannot be undone.</p>
+<div style="display:flex;gap:12px">
+<button style="flex:1;padding:12px;border:2px solid #E2E8F0;background:#fff;border-radius:12px;font-weight:700;cursor:pointer" onclick="closeCancel()">Keep</button>
+<button style="flex:1;padding:12px;border:none;background:linear-gradient(135deg,var(--err),#DC2626);color:#fff;border-radius:12px;font-weight:700;cursor:pointer" onclick="doCancel()">Cancel</button>
+</div>
+</div>
+</div>
+
+<!-- SOS Modal -->
+<div class="overlay ctr" id="sosOverlay">
+<div style="background:#fff;width:100%;max-width:340px;border-radius:24px;padding:30px 25px;text-align:center;transform:scale(.9);opacity:0;transition:all .3s" id="sosBox">
+<div style="width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,var(--err),#DC2626);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;margin:0 auto 20px;animation:sosPulse 2s infinite"><i class="fa-solid fa-triangle-exclamation"></i></div>
+<h3 style="font-size:1.3rem;font-weight:800;margin-bottom:10px;color:var(--err)">Emergency SOS</h3>
+<p style="color:var(--text2);font-size:.95rem;margin-bottom:20px;line-height:1.5">We will share your live location with emergency contacts and our support team.</p>
+<div style="display:flex;flex-direction:column;gap:10px">
+<button style="width:100%;padding:14px;border:none;background:linear-gradient(135deg,var(--err),#DC2626);color:#fff;border-radius:12px;font-weight:700;cursor:pointer;font-size:1rem" onclick="triggerSOS()"><i class="fa-solid fa-phone" style="margin-right:8px"></i>Call Emergency</button>
+<button style="width:100%;padding:12px;border:2px solid #E2E8F0;background:#fff;border-radius:12px;font-weight:700;cursor:pointer" onclick="closeSOS()">Close</button>
+</div>
+</div>
+</div>
+
+<button class="sos-btn" onclick="openSOS()"><i class="fa-solid fa-triangle-exclamation"></i></button>
+
+<div class="nav">
+<button class="nav-item" onclick="goTo('index.html')"><i class="fa-solid fa-house"></i>Home</button>
+<button class="nav-item" onclick="goTo('services.html')"><i class="fa-solid fa-paint-roller"></i>Services</button>
+<button class="nav-item active" onclick="goTo('bookings.html')"><i class="fa-solid fa-box-open"></i>Bookings</button>
+<button class="nav-item" onclick="goTo('about.html')"><i class="fa-solid fa-user"></i>Profile</button>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+const firebaseConfig={apiKey:"AIzaSyCmqBL6a0muExq2qBsSR6M3C_8AyXcJ2k8",authDomain:"urban-paint-pro.firebaseapp.com",databaseURL:"https://urban-paint-pro-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"urban-paint-pro",storageBucket:"urban-paint-pro.firebasestorage.app",messagingSenderId:"929763117480",appId:"1:929763117480:web:560057baeb12672078b59d"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database(),auth=firebase.auth();
+
+let currentUser=null,currentOrderId=null,currentFilter='all',revOrderId=null;
+let mainRating=0,paramRatings={punctuality:0,quality:0,behaviour:0,cleanliness:0},selTipAmt=0,reschedDate='',reschedTime='';
+
+auth.onAuthStateChanged(user=>{
+if(user){currentUser=user;loadOrders(user.uid);}
+else{window.location.href='index.html';}
+});
+
+function loadOrders(uid){
+db.ref('users/'+uid+'/orders').on('value',snap=>{
+const data=snap.val()||{};
+const list=document.getElementById('ordersList');
+let entries=Object.entries(data).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+if(currentFilter!=='all')entries=entries.filter(([k,o])=>o.status===currentFilter);
+
+if(entries.length===0){
+list.innerHTML='<div class="empty"><i class="fa-solid fa-clipboard-list"></i><h3>No Bookings Found</h3><p>Book your first service now!</p><button onclick="window.location.href=\'services.html\'">Book Service</button></div>';
+return;
+}
+
+list.innerHTML=entries.map(([k,o])=>renderOrder(k,o)).join('');
+});
+}
+
+function renderOrder(id,order){
+const date=order.createdAt?new Date(order.createdAt).toLocaleDateString('en-IN'):'Recent';
+const price=(order.total||order.amount||0).toLocaleString();
+const st=order.status||'pending';
+const statusMap={pending:'Pending',assigned:'Partner Assigned',ontheway:'On The Way',arrived:'Arrived',started:'Work Started',inprogress:'In Progress',complete:'Work Complete',payment:'Payment Pending',completed:'Completed',cancelled:'Cancelled',rescheduled:'Rescheduled'};
+const statusText=statusMap[st]||st;
+const stClass=st==='completed'?'completed':(st==='cancelled'?'cancelled':(st==='started'||st==='inprogress'||st==='complete'?'ongoing':''));
+
+let actions='';
+if(st==='pending'){
+actions=`<div class="btn-row"><button class="btn-warn" onclick="openResched('${id}')">Reschedule</button><button class="btn-danger" onclick="openCancel('${id}')">Cancel</button></div>`;
+}else if(st==='assigned'||st==='ontheway'||st==='arrived'){
+actions=`<div class="btn-row"><button class="btn-outline" onclick="callPartner('${id}')"><i class="fa-solid fa-phone"></i> Call</button><button class="btn-primary" onclick="trackOrder('${id}')">Track Live</button></div>`;
+}else if(st==='started'||st==='inprogress'){
+actions=`<div class="otp-section"><h4><i class="fa-solid fa-shield-halved" style="margin-right:6px"></i>Work OTP</h4><div class="otp-code">${order.startOtp||'----'}</div><p>Share this OTP with partner when work starts</p></div>`;
+}else if(st==='complete'){
+actions=`<div class="btn-row"><button class="btn-primary" onclick="openReview('${id}')">Rate Service</button><button class="btn-outline" onclick="goTo('checkout.html?order=${id}')">Pay Now</button></div>`;
+}else if(st==='completed'&&!order.reviewed){
+actions=`<div class="btn-row"><button class="btn-primary" onclick="openReview('${id}')">Rate Service</button></div>`;
+}
+
+let partnerHtml='';
+if(order.partnerId&&(st==='assigned'||st==='ontheway'||st==='arrived'||st==='started'||st==='inprogress'||st==='complete')){
+partnerHtml=`<div class="partner-card"><img src="${order.partnerPhoto||'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="partner-img"><div class="partner-info"><h4>${order.partnerName||'Partner Assigned'}</h4><p>${order.partnerSkill||'Professional'} | ${order.partnerJobs||'50'}+ jobs</p><div class="partner-rating"><i class="fa-solid fa-star"></i>${order.partnerRating||'4.8'}</div></div><div class="partner-actions"><button onclick="callPartner('${id}')"><i class="fa-solid fa-phone"></i></button><button onclick="chatPartner('${id}')"><i class="fa-solid fa-comment"></i></button></div></div>`;
+}
+
+let timelineHtml='';
+if(st!=='cancelled'&&st!=='pending'){
+const steps=[{k:'pending',l:'Booking Confirmed'},{k:'assigned',l:'Partner Assigned'},{k:'ontheway',l:'Partner On The Way'},{k:'arrived',l:'Partner Arrived'},{k:'started',l:'Work Started'},{k:'inprogress',l:'Work In Progress'},{k:'complete',l:'Work Completed'},{k:'completed',l:'Payment Done'}];
+const idx=steps.findIndex(s=>s.k===st);
+timelineHtml=`<div class="timeline">${steps.map((s,i)=>`<div class="tl-item ${i<idx?'done':(i===idx?'active':'')}"><div class="tl-dot"></div><div class="tl-text"><h4>${s.l}</h4>${i===idx?'<p>Current status</p>':''}</div></div>`).join('')}</div>`;
+}
+
+return `<div class="order-card ${stClass}"><div class="order-header"><div><h4>${order.service}</h4><div class="order-id">#${id.slice(-6).toUpperCase()} | ${date}</div></div><span class="status-pill ${st}">${statusText}</span></div><div class="order-details"><div style="margin-bottom:4px"><i class="fa-regular fa-calendar"></i>${order.slot?.date||'TBD'} | ${order.slot?.time||'TBD'}</div><div><i class="fa-solid fa-location-dot"></i>${order.address?.area||order.customer?.address||'Address'}</div></div><div class="order-price">Rs ${price}</div>${partnerHtml}${timelineHtml}${actions}</div>`;
+}
+
+function filterOrders(f){
+currentFilter=f;
+document.querySelectorAll('.btab').forEach(b=>b.classList.remove('active'));
+event.target.classList.add('active');
+if(currentUser)loadOrders(currentUser.uid);
+}
+
+function openReview(id){
+revOrderId=id;
+db.ref('orders/'+id).once('value').then(s=>{
+const o=s.val()||{};
+document.getElementById('revPartnerName').textContent=o.partnerName||'Your Partner';
+document.getElementById('revPartnerImg').src=o.partnerPhoto||'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+});
+document.getElementById('reviewOverlay').classList.add('active');
+}
+function closeReview(){document.getElementById('reviewOverlay').classList.remove('active');resetReview();}
+
+function rateMain(n){mainRating=n;document.querySelectorAll('#mainStars i').forEach((s,i)=>{s.classList.toggle('active',i<n);});}
+function rateParam(p,n){paramRatings[p]=n;document.querySelectorAll('#'+p+'Stars i').forEach((s,i)=>{s.classList.toggle('sel',i<n);});}
+function toggleTag(btn){btn.classList.toggle('sel');}
+function selTip(amt,btn){selTipAmt=amt;document.querySelectorAll('.tip-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
+
+function resetReview(){mainRating=0;paramRatings={punctuality:0,quality:0,behaviour:0,cleanliness:0};selTipAmt=0;document.querySelectorAll('.star-rating i').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.param-stars i').forEach(s=>s.classList.remove('sel'));document.querySelectorAll('.review-tags button').forEach(b=>b.classList.remove('sel'));document.querySelectorAll('.tip-btn').forEach(b=>b.classList.remove('sel'));document.getElementById('reviewText').value='';}
+
+function submitReview(){
+if(mainRating===0){toast('Please give a star rating','warn');return;}
+const tags=[];document.querySelectorAll('.review-tags button.sel').forEach(b=>tags.push(b.textContent));
+const review={overall:mainRating,punctuality:paramRatings.punctuality,quality:paramRatings.quality,behaviour:paramRatings.behaviour,cleanliness:paramRatings.cleanliness,tags:tags,comment:document.getElementById('reviewText').value,tip:selTipAmt,createdAt:firebase.database.ServerValue.TIMESTAMP};
+
+db.ref('orders/'+revOrderId+'/review').set(review);
+db.ref('users/'+currentUser.uid+'/orders/'+revOrderId+'/review').set(review);
+db.ref('users/'+currentUser.uid+'/orders/'+revOrderId).update({reviewed:true,status:'completed'});
+db.ref('orders/'+revOrderId).update({reviewed:true,status:'completed'});
+
+if(selTipAmt>0){
+db.ref('users/'+currentUser.uid+'/wallet/balance').once('value').then(s=>{
+const bal=s.val()||0;
+if(bal>=selTipAmt){
+db.ref('users/'+currentUser.uid+'/wallet/balance').set(bal-selTipAmt);
+db.ref('orders/'+revOrderId+'/tip').set({amount:selTipAmt,status:'paid'});
+}
+});
+}
+
+closeReview();
+toast('Review submitted successfully!','ok');
+}
+
+function openResched(id){
+currentOrderId=id;
+const c=document.getElementById('reschedDates');
+const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let html='';
+for(let i=1;i<8;i++){
+const d=new Date();d.setDate(d.getDate()+i);
+const dn=days[d.getDay()];const dt=d.getDate();const fd=d.toLocaleDateString('en-GB');
+if(i===1)reschedDate=fd;
+html+=`<div class="date-card ${i===1?'active':''}" onclick="pickReschedDate(this,'${fd}')" style="min-width:70px;padding:14px 8px;background:${i===1?'#F0FDFA':'#F1F5F9'};border-radius:12px;text-align:center;cursor:pointer;border:2px solid ${i===1?'var(--p)':'transparent'};transition:.2s"><div style="font-size:.7rem;font-weight:600;text-transform:uppercase;margin-bottom:4px">${dn}</div><div style="font-size:1.1rem;font-weight:800">${dt}</div></div>`;
+}
+c.innerHTML=html;
+const slots=['9:00 AM','11:00 AM','1:00 PM','3:00 PM','5:00 PM','7:00 PM'];
+document.getElementById('reschedSlots').innerHTML=slots.map((t,i)=>`<div style="padding:12px;border:1px solid #CBD5E1;border-radius:10px;text-align:center;cursor:pointer;font-weight:600;font-size:.9rem;background:${i===0?'var(--p)':'#fff'};color:${i===0?'#fff':'var(--text)'};transition:.2s" onclick="pickReschedTime(this,'${t}')">${t}</div>`).join('');
+reschedTime=slots[0];
+document.getElementById('reschedOverlay').classList.add('active');
+}
+function pickReschedDate(el,date){document.querySelectorAll('#reschedDates .date-card').forEach(e=>{e.style.background='#F1F5F9';e.style.borderColor='transparent';});el.style.background='#F0FDFA';el.style.borderColor='var(--p)';reschedDate=date;}
+function pickReschedTime(el,time){document.querySelectorAll('#reschedSlots div').forEach(e=>{e.style.background='#fff';e.style.color='var(--text)';});el.style.background='var(--p)';el.style.color='#fff';reschedTime=time;}
+function closeResched(){document.getElementById('reschedOverlay').classList.remove('active');}
+function confirmResched(){
+if(!currentOrderId)return;
+db.ref('orders/'+currentOrderId).update({slot:{date:reschedDate,time:reschedTime},rescheduledAt:firebase.database.ServerValue.TIMESTAMP,status:'rescheduled'});
+db.ref('users/'+currentUser.uid+'/orders/'+currentOrderId).update({slot:{date:reschedDate,time:reschedTime},rescheduledAt:firebase.database.ServerValue.TIMESTAMP,status:'rescheduled'});
+closeResched();
+toast('Booking rescheduled successfully!','ok');
+}
+
+function openCancel(id){currentOrderId=id;document.getElementById('cancelOverlay').classList.add('active');setTimeout(()=>{document.getElementById('cancelBox').style.transform='scale(1)';document.getElementById('cancelBox').style.opacity='1';},10);}
+function closeCancel(){document.getElementById('cancelOverlay').classList.remove('active');document.getElementById('cancelBox').style.transform='scale(.9)';document.getElementById('cancelBox').style.opacity='0';}
+function doCancel(){
+if(!currentOrderId)return;
+db.ref('orders/'+currentOrderId).update({status:'cancelled',cancelledAt:firebase.database.ServerValue.TIMESTAMP});
+db.ref('users/'+currentUser.uid+'/orders/'+currentOrderId).update({status:'cancelled',cancelledAt:firebase.database.ServerValue.TIMESTAMP});
+closeCancel();
+toast('Booking cancelled','ok');
+}
+
+function trackOrder(id){window.location.href='tracking.html?order='+id;}
+function callPartner(id){toast('Calling partner...','inf');}
+function chatPartner(id){toast('Opening chat...','inf');}
+
+function openSOS(){document.getElementById('sosOverlay').classList.add('active');setTimeout(()=>{document.getElementById('sosBox').style.transform='scale(1)';document.getElementById('sosBox').style.opacity='1';},10);}
+function closeSOS(){document.getElementById('sosOverlay').classList.remove('active');document.getElementById('sosBox').style.transform='scale(.9)';document.getElementById('sosBox').style.opacity='0';}
+function triggerSOS(){toast('Emergency alert sent to support team!','err','SOS Triggered');closeSOS();}
+
+function goTo(url){window.location.href=url;}
+function toast(msg,type='inf',title=''){const w=document.getElementById('toastWrap');const t=document.createElement('div');t.className='toast '+type;const icons={ok:'fa-circle-check',err:'fa-circle-xmark',warn:'fa-triangle-exclamation',inf:'fa-circle-info'};const titles={ok:'Success!',err:'Error!',warn:'Warning!',inf:'Information'};t.innerHTML=`<div class="toast-ico"><i class="fa-solid ${icons[type]}"></i></div><div><div class="toast-tit">${title||titles[type]}</div><div class="toast-msg">${msg}</div></div>`;w.appendChild(t);setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},4000);}
+</script>
+</body>
+</html>

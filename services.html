@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0D9488">
+<title>Services | Refine Home Painting</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--p:#0D9488;--p-light:#14B8A6;--p-dark:#0F766E;--bg:#F0FDFA;--surface:#FFF;--text:#134E4A;--text2:#64748B;--err:#EF4444;--ok:#22C55E;--warn:#F59E0B}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Plus Jakarta Sans',sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:90px}
+
+.header{position:fixed;top:0;width:100%;height:60px;background:var(--surface);display:flex;align-items:center;padding:0 16px;z-index:100;border-bottom:1px solid #F1F5F9}
+.back-btn{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;color:var(--text)}
+.header-title{font-weight:700;font-size:1.1rem;margin-left:10px;flex:1}
+
+.tabs{position:fixed;top:60px;width:100%;background:var(--surface);z-index:99;padding:10px 16px;overflow-x:auto;white-space:nowrap;border-bottom:1px solid #F1F5F9;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{display:inline-block;padding:8px 16px;margin-right:8px;border-radius:20px;font-size:.85rem;font-weight:600;background:#F1F5F9;color:var(--text2);border:1px solid transparent;cursor:pointer;transition:.2s}
+.tab.active{background:#F0FDFA;color:var(--p);border-color:var(--p)}
+
+.content{margin-top:120px;padding:0 16px}
+
+/* Service Detail Hero */
+.srv-hero{background:linear-gradient(135deg,var(--p),var(--p-dark));border-radius:20px;padding:25px 20px;color:#fff;margin-bottom:20px;position:relative;overflow:hidden}
+.srv-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(255,255,255,.1);border-radius:50%}
+.srv-hero h2{font-size:1.3rem;font-weight:800;margin-bottom:8px;position:relative}
+.srv-hero p{opacity:.9;font-size:.9rem;position:relative}
+.srv-hero .rating{display:flex;align-items:center;gap:6px;margin-top:10px;position:relative}
+.srv-hero .rating i{color:#FCD34D;font-size:.9rem}
+.srv-hero .rating span{font-size:.85rem;opacity:.9}
+
+/* What's Included */
+.inc-card{background:var(--surface);border-radius:16px;padding:20px;margin-bottom:16px;border:1px solid #F1F5F9}
+.inc-card h3{font-size:1rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.inc-card h3 i{color:var(--p)}
+.inc-item{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:.9rem;color:#475569}
+.inc-item i{color:var(--ok);font-size:.8rem}
+
+/* Packages */
+.pkg-title{font-size:1rem;font-weight:700;margin:20px 0 12px;padding:0 4px}
+.pkg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.pkg-card{background:var(--surface);border:2px solid #E2E8F0;border-radius:16px;padding:16px 10px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+.pkg-card:hover{border-color:var(--p-light)}
+.pkg-card.selected{border-color:var(--p);background:#F0FDFA;box-shadow:0 4px 15px rgba(13,148,136,.1)}
+.pkg-card .badge{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--warn);color:#fff;font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:10px}
+.pkg-name{font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.pkg-price{font-size:1.1rem;font-weight:800;color:var(--p)}
+.pkg-old{text-decoration:line-through;color:#94A3B8;font-size:.75rem}
+.pkg-list{text-align:left;margin-top:10px;font-size:.75rem;color:var(--text2)}
+.pkg-list div{padding:3px 0}
+.pkg-list i{color:var(--ok);margin-right:4px;font-size:.7rem}
+
+/* Add-ons */
+.addon-card{background:var(--surface);border-radius:16px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;border:1px solid #F1F5F9;cursor:pointer;transition:.2s}
+.addon-card:hover{border-color:var(--p-light)}
+.addon-card.selected{border-color:var(--p);background:#F0FDFA}
+.addon-icon{width:44px;height:44px;border-radius:12px;background:#F0FDFA;display:flex;align-items:center;justify-content:center;color:var(--p);font-size:1.1rem;flex-shrink:0}
+.addon-info{flex:1}
+.addon-info h4{font-size:.9rem;font-weight:700;margin-bottom:2px}
+.addon-info p{font-size:.8rem;color:var(--text2)}
+.addon-price{font-weight:800;color:var(--p);font-size:.95rem}
+.addon-check{width:24px;height:24px;border:2px solid #CBD5E1;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;transition:.2s;flex-shrink:0}
+.addon-card.selected .addon-check{background:var(--p);border-color:var(--p)}
+
+/* Calculator (for painting) */
+.calc-card{background:var(--surface);border-radius:16px;padding:20px;margin-bottom:16px;border:1px solid #F1F5F9}
+.calc-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px dashed #E2E8F0;cursor:pointer}
+.calc-row:last-child{border-bottom:none}
+.calc-label{font-size:.9rem;color:var(--text2);font-weight:600}
+.calc-val{font-size:.95rem;font-weight:700;color:var(--p);display:flex;align-items:center;gap:6px}
+.calc-total{background:linear-gradient(135deg,#F0FDFA,#CCFBF1);padding:20px;border-radius:14px;text-align:center;margin-top:16px;border:1px solid #CCFBF1}
+.calc-total .label{font-size:.85rem;color:var(--text2);margin-bottom:4px}
+.calc-total .price{font-size:2rem;font-weight:800;color:var(--p)}
+
+/* Cart Bar */
+.cart-bar{position:fixed;bottom:75px;left:12px;right:12px;background:#1E293B;color:#fff;padding:14px 18px;border-radius:14px;display:none;align-items:center;justify-content:space-between;z-index:200;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+.cart-bar.active{display:flex}
+.cart-info{font-size:.8rem;opacity:.8}
+.cart-price{font-weight:800;font-size:1.1rem}
+.cart-btn{background:var(--p);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer}
+
+/* Bottom Sheet */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:99990;display:none;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .3s}
+.overlay.active{display:flex;opacity:1}
+.sheet{background:#fff;width:100%;max-width:480px;border-radius:24px 24px 0 0;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);max-height:85vh;overflow:hidden;display:flex;flex-direction:column}
+.overlay.active .sheet{transform:translateY(0)}
+.sheet-drag{width:40px;height:4px;background:#E2E8F0;border-radius:2px;margin:12px auto}
+.shead{padding:0 20px 16px;display:flex;align-items:center;justify-content:space-between}
+.shead h3{font-size:1.1rem;font-weight:700}
+.sclose{width:32px;height:32px;border-radius:50%;background:#F1F5F9;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sbody{padding:0 20px 20px;overflow-y:auto;flex:1}
+.sel-opt{padding:16px;border-bottom:1px solid #F1F5F9;display:flex;justify-content:space-between;align-items:center;font-weight:600;cursor:pointer;border-radius:12px;margin-bottom:6px;transition:.2s}
+.sel-opt:hover{background:#F0FDFA}
+.sel-opt.sel{color:var(--p);background:#F0FDFA;border:2px solid var(--p)}
+
+/* Menu Items (non-painting) */
+.menu-card{background:var(--surface);border-radius:16px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;border:1px solid #F1F5F9}
+.menu-info h4{font-size:.95rem;font-weight:700;margin-bottom:3px}
+.menu-info p{font-size:.8rem;color:var(--text2)}
+.menu-price{font-weight:800;color:var(--p);font-size:1rem}
+.menu-qty{display:flex;align-items:center;gap:8px;margin-top:6px}
+.menu-qty button{width:28px;height:28px;border-radius:8px;border:1px solid #CBD5E1;background:#fff;color:var(--p);font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.menu-qty span{font-weight:700;min-width:20px;text-align:center}
+.add-btn{padding:8px 18px;background:var(--p);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer}
+
+/* Toast */
+.toast-wrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:100000;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:92%;max-width:380px}
+.toast{background:#fff;padding:14px 16px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.15);display:flex;align-items:center;gap:12px;transform:translateY(-80px);opacity:0;transition:all .4s cubic-bezier(.32,.72,0,1);pointer-events:all;border-left:4px solid var(--p)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-left-color:var(--ok)}.toast.err{border-left-color:var(--err)}.toast.warn{border-left-color:var(--warn)}
+.toast-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.toast.ok .toast-ico{background:#DCFCE7;color:var(--ok)}.toast.err .toast-ico{background:#FEE2E2;color:var(--err)}.toast.warn .toast-ico{background:#FEF3C7;color:var(--warn)}.toast.inf .toast-ico{background:#F0FDFA;color:var(--p)}
+.toast-tit{font-weight:700;color:#1E293B;font-size:.9rem}.toast-msg{color:var(--text2);font-size:.8rem}
+
+/* Nav */
+.nav{position:fixed;bottom:0;width:100%;height:68px;background:var(--surface);border-top:1px solid #F1F5F9;display:flex;justify-content:space-around;align-items:center;z-index:100}
+.nav-item{text-align:center;color:#94A3B8;font-size:.65rem;font-weight:700;width:60px;cursor:pointer;padding:6px;border-radius:12px;transition:.2s;border:none;background:none}
+.nav-item.active{color:var(--p);background:#F0FDFA}
+.nav-item i{display:block;font-size:1.2rem;margin-bottom:3px}
+
+@media(min-width:480px){body{max-width:480px;margin:0 auto}.header,.nav{max-width:480px;left:50%;transform:translateX(-50%)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+<i class="fa-solid fa-arrow-left back-btn" onclick="history.back()"></i>
+<div class="header-title" id="pageTitle">Services</div>
+</div>
+
+<div class="tabs" id="tabBar">
+<div class="tab active" onclick="switchCat('painting')">Painting</div>
+<div class="tab" onclick="switchCat('waterproofing')">Waterproofing</div>
+<div class="tab" onclick="switchCat('electrician')">Electrician</div>
+<div class="tab" onclick="switchCat('plumber')">Plumber</div>
+<div class="tab" onclick="switchCat('carpenter')">Carpenter</div>
+<div class="tab" onclick="switchCat('ac')">AC Repair</div>
+<div class="tab" onclick="switchCat('cleaning')">Cleaning</div>
+<div class="tab" onclick="switchCat('pest')">Pest Control</div>
+</div>
+
+<div class="content" id="mainContent"></div>
+
+<!-- Selector Sheet -->
+<div class="overlay" id="selOverlay" onclick="closeSel()">
+<div class="sheet" onclick="event.stopPropagation()">
+<div class="sheet-drag"></div>
+<div class="shead"><h3 id="selTitle">Select</h3><button class="sclose" onclick="closeSel()"><i class="fa-solid fa-xmark"></i></button></div>
+<div class="sbody" id="selBody"></div>
+</div>
+</div>
+
+<!-- Cart Bar -->
+<div class="cart-bar" id="cartBar">
+<div><div class="cart-info" id="cartInfo">0 items</div><div class="cart-price" id="cartPrice">Rs 0</div></div>
+<button class="cart-btn" onclick="goCheckout()">View Cart</button>
+</div>
+
+<div class="nav">
+<button class="nav-item" onclick="goTo('index.html')"><i class="fa-solid fa-house"></i>Home</button>
+<button class="nav-item active" onclick="goTo('services.html')"><i class="fa-solid fa-paint-roller"></i>Services</button>
+<button class="nav-item" onclick="goTo('bookings.html')"><i class="fa-solid fa-box-open"></i>Bookings</button>
+<button class="nav-item" onclick="goTo('about.html')"><i class="fa-solid fa-user"></i>Profile</button>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+const firebaseConfig={apiKey:"AIzaSyCmqBL6a0muExq2qBsSR6M3C_8AyXcJ2k8",authDomain:"urban-paint-pro.firebaseapp.com",databaseURL:"https://urban-paint-pro-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"urban-paint-pro",storageBucket:"urban-paint-pro.firebasestorage.app",messagingSenderId:"929763117480",appId:"1:929763117480:web:560057baeb12672078b59d"};
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+
+// Data
+const paintData={
+cities:[{v:'delhi',t:'Delhi'},{v:'noida',t:'Noida'},{v:'gurgaon',t:'Gurgaon'},{v:'faridabad',t:'Faridabad'},{v:'ghaziabad',t:'Ghaziabad'}],
+rooms:[{v:120,t:"1 Wall Small (120 sqft)"},{v:200,t:"1 Wall Highlight (200 sqft)"},{v:450,t:"Master Bedroom (450 sqft)"},{v:1500,t:"1 BHK (1500 sqft)"},{v:2500,t:"2 BHK (2500 sqft)"},{v:3500,t:"3 BHK (3500 sqft)"},{v:4500,t:"4 BHK / Villa (4500 sqft)"}],
+services:[{v:0,t:"Repaint (Same Color)"},{v:5,t:"Repaint + Primer (+Rs 5)"},{v:12,t:"Fresh Paint + Putty (+Rs 12)"},{v:20,t:"Full Rental Makeover (+Rs 20)"}],
+brands:[{v:'Asian',t:'Asian Paints'},{v:'Berger',t:'Berger Paints'},{v:'Dulux',t:'Dulux'},{v:'Nerolac',t:'Nerolac'},{v:'DrFixit',t:'Dr. Fixit'}],
+catalog:{
+"Asian":{"Interior":[{n:"Tractor Emulsion",p:12},{n:"Apcolite Premium",p:22},{n:"Royale Luxury",p:28},{n:"Royale Matt",p:32},{n:"Royale Aspira",p:38},{n:"Royale Glitz",p:42}],"Exterior":[{n:"Ace Exterior",p:15},{n:"Apex Weatherproof",p:25},{n:"Apex Ultima",p:35},{n:"Ultima Protek",p:55}],"Waterproofing":[{n:"SmartCare Damp Proof",p:75},{n:"SmartCare Crack Filler",p:45}]},
+"Berger":{"Interior":[{n:"Bison Emulsion",p:13},{n:"Rangoli Total",p:20},{n:"Silk Glamor",p:28},{n:"Silk Breathe Easy",p:35}],"Exterior":[{n:"Walmasta",p:16},{n:"WeatherCoat Long Life",p:32}],"Waterproofing":[{n:"Home Shield Dampstop",p:80},{n:"Seal-O-Prime",p:65}]},
+"Dulux":{"Interior":[{n:"SuperCover",p:16},{n:"Velvet Touch",p:32},{n:"Living Diamond",p:40}],"Exterior":[{n:"Weathershield",p:28},{n:"Weathershield Powerflex",p:45}]},
+"Nerolac":{"Interior":[{n:"Beauty Smooth",p:14},{n:"Pearls Emulsion",p:24},{n:"Impressions Eco Clean",p:34}],"Exterior":[{n:"Excel Mica Marble",p:28},{n:"Suraksha Plus",p:18}]},
+"DrFixit":{"Waterproofing":[{n:"Roofseal (Terrace)",p:85},{n:"Raincoat (Walls)",p:65},{n:"Crack X Paste",p:45},{n:"Dampguard",p:95}]}
+}
+};
+
+const packages={
+painting:[
+{name:"Basic",price:15,oldPrice:20,features:["1 coat paint","Basic masking","1 day service","7-day warranty"]},
+{name:"Standard",price:22,oldPrice:30,features:["2 coat paint + primer","Furniture covering","2 day service","1-year warranty","Free touch-up"],badge:"POPULAR"},
+{name:"Premium",price:35,oldPrice:45,features:["3 coat + putty + primer","Full furniture & floor cover","3 day service","2-year warranty","Premium paint","Site supervisor"],badge:"BEST"}
+],
+waterproofing:[
+{name:"Basic",price:45,oldPrice:55,features:["1 coat application","Basic crack filling","1-year warranty"]},
+{name:"Standard",price:65,oldPrice:80,features:["2 coat application","Crack filling + primer","2-year warranty","Free inspection"],badge:"POPULAR"},
+{name:"Premium",price:95,oldPrice:120,features:["3 coat + membrane","Complete surface prep","5-year warranty","Annual checkup","Dr. Fixit certified"],badge:"BEST"}
+]
+};
+
+const addons={
+painting:[
+{name:"Wall Repair (Cracks)",desc:"Fill cracks and smooth surface",price:25,icon:"fa-trowel"},
+{name:"Furniture Covering",desc:"Protect sofas, beds, tables",price:15,icon:"fa-couch"},
+{name:"Floor Protection",desc:"Cover floors with masking",price:10,icon:"fa-layer-group"},
+{name:"Premium Brushes",desc:"High quality brush work",price:8,icon:"fa-paintbrush"},
+{name:"Post-Cleaning",desc:"Deep clean after painting",price:20,icon:"fa-broom"}
+],
+waterproofing:[
+{name:"Extra Crack Filling",desc:"Additional crack treatment",price:20,icon:"fa-fill-drip"},
+{name:"Tile Grouting",desc:"Re-grout bathroom tiles",price:35,icon:"fa-border-all"},
+{name:"Mold Treatment",desc:"Anti-mold chemical treatment",price:30,icon:"fa-virus-slash"}
+]
+};
+
+const menuData={
+waterproofing:[{name:'Terrace Waterproofing',price:199,unit:'Visit'},{name:'Bathroom Leakage Check',price:149,unit:'Visit'},{name:'Wall Dampness Treatment',price:1499,unit:'1 Wall'},{name:'Water Tank Waterproofing',price:999,unit:'500L'},{name:'Crack Filling Service',price:499,unit:'Service'},{name:'Dr. Fixit Coating',price:85,unit:'Per Sqft'}],
+electrician:[{name:'Fan Installation',price:89},{name:'Switch/Socket Repair',price:49},{name:'Tube Light Install',price:49},{name:'MCB Change',price:99},{name:'Inverter Installation',price:399},{name:'Geyser Installation',price:299},{name:'Wiring Fault Check',price:199},{name:'Chandelier Install',price:499}],
+plumber:[{name:'Tap Washer Change',price:49},{name:'New Tap Install',price:89},{name:'Washbasin Blockage',price:149},{name:'Sink Pipe Change',price:99},{name:'Toilet Jet Spray',price:129},{name:'Water Tank Cleaning 500L',price:499},{name:'Water Tank Cleaning 1000L',price:799},{name:'Shower Installation',price:199}],
+ac:[{name:'AC Service (Split)',price:499},{name:'AC Service (Window)',price:399},{name:'AC Install (Split)',price:1499},{name:'AC Install (Window)',price:799},{name:'Gas Filling R32',price:2499},{name:'Gas Filling R22',price:2199},{name:'AC Uninstallation',price:699},{name:'PCB Repair (Visit)',price:299}],
+cleaning:[{name:'Full Home Deep Clean 1BHK',price:1999},{name:'Full Home Deep Clean 2BHK',price:2999},{name:'Full Home Deep Clean 3BHK',price:3999},{name:'Bathroom Deep Clean',price:399},{name:'Kitchen Deep Clean',price:699},{name:'Sofa Cleaning Per Seat',price:149},{name:'Carpet Cleaning',price:599},{name:'Fridge Deep Clean',price:199}],
+carpenter:[{name:'Door Lock Repair',price:149},{name:'Handle Installation',price:89},{name:'Drill and Hang Per Hole',price:29},{name:'Curtain Rod Install',price:129},{name:'Drawer Channel Fix',price:199},{name:'Door Stopper Install',price:49},{name:'Furniture Assembly Small',price:299},{name:'Bed Dismantle/Assemble',price:599}],
+pest:[{name:'Cockroach Control 1BHK',price:799},{name:'Cockroach Control 2BHK',price:999},{name:'Cockroach Control 3BHK',price:1199},{name:'Termite Control Per Room',price:1499},{name:'Bed Bug Treatment',price:1299},{name:'Rat/Mouse Control',price:699}]
+};
+
+let state={cat:'painting',paint:{city:'delhi',room:120,roomTxt:'1 Wall',svc:0,svcTxt:'Repaint',brand:'Asian',cat:'Interior',prod:12,prodName:'Tractor',qty:1},pkg:'',addons:[],cart:{}};
+let selCtx='';
+
+document.addEventListener('DOMContentLoaded',()=>{
+const url=new URLSearchParams(window.location.search);
+const c=url.get('category')||'painting';
+switchCat(c);
+});
+
+function switchCat(c){
+state.cat=c;
+document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');if(t.textContent.toLowerCase().includes(c))t.classList.add('active');});
+const content=document.getElementById('mainContent');
+if(c==='painting'||c==='waterproofing'){renderPaint(content,c);}
+else{renderMenu(content,c);}
+}
+
+function renderPaint(el,cat){
+const isPaint=cat==='painting';
+const pkgs=packages[cat]||packages.painting;
+const ads=addons[cat]||[];
+
+let html=`<div class="srv-hero"><h2>${isPaint?'Home Painting':'Waterproofing'} Services</h2><p>Professional ${isPaint?'painters':'waterproofing experts'} at your doorstep</p><div class="rating"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i><span>4.8 (2,400+ reviews)</span></div></div>`;
+
+html+=`<div class="inc-card"><h3><i class="fa-solid fa-circle-check"></i>What's Included</h3><div class="inc-item"><i class="fa-solid fa-check"></i>Free site visit and measurement</div><div class="inc-item"><i class="fa-solid fa-check"></i>Material cost included in estimate</div><div class="inc-item"><i class="fa-solid fa-check"></i>Labour charges included</div><div class="inc-item"><i class="fa-solid fa-check"></i>Post-service cleanup</div><div class="inc-item"><i class="fa-solid fa-check"></i>${isPaint?'1-year':'2-year'} warranty on service</div></div>`;
+
+html+=`<div class="pkg-title">Choose Package</div><div class="pkg-grid">`;
+pkgs.forEach((p,i)=>{
+html+=`<div class="pkg-card ${state.pkg===i?'selected':''}" onclick="selectPkg(${i})">${p.badge?`<span class="badge">${p.badge}</span>`:''}<div class="pkg-name">${p.name}</div><div class="pkg-old">Rs ${p.oldPrice}/sqft</div><div class="pkg-price">Rs ${p.price}/sqft</div><div class="pkg-list">${p.features.map(f=>`<div><i class="fa-solid fa-check"></i>${f}</div>`).join('')}</div></div>`;
+});
+html+=`</div>`;
+
+if(ads.length>0){
+html+=`<div class="pkg-title">Add-ons</div>`;
+ads.forEach((a,i)=>{
+const sel=state.addons.includes(i);
+html+=`<div class="addon-card ${sel?'selected':''}" onclick="toggleAddon(${i})"><div class="addon-icon"><i class="fa-solid ${a.icon}"></i></div><div class="addon-info"><h4>${a.name}</h4><p>${a.desc}</p></div><div style="text-align:right"><div class="addon-price">+Rs ${a.price}</div><div class="addon-check"><i class="fa-solid fa-check" style="font-size:.7rem;opacity:${sel?1:0}"></i></div></div></div>`;
+});
+}
+
+if(isPaint){
+html+=`<div class="calc-card"><h3 style="margin-bottom:16px;font-size:1rem"><i class="fa-solid fa-calculator" style="color:var(--p);margin-right:8px"></i>Paint Calculator</h3>`;
+html+=renderRow('city','City',state.paint.city.toUpperCase());
+html+=renderRow('room','Area',state.paint.roomTxt);
+html+=renderRow('svc','Condition',state.paint.svcTxt);
+html+=renderRow('brand','Brand',state.paint.brand);
+html+=renderRow('pcat','Type',state.paint.cat);
+html+=renderRow('prod','Product',state.paint.prodName);
+html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0"><span class="calc-label">Quantity</span><div style="display:flex;align-items:center;gap:10px;background:#F1F5F9;border-radius:10px;padding:4px"><button onclick="chgQty(-1)" style="width:32px;height:32px;border:none;background:transparent;font-size:1.2rem;color:var(--p);cursor:pointer">-</button><span style="font-weight:700;min-width:20px;text-align:center">${state.paint.qty}</span><button onclick="chgQty(1)" style="width:32px;height:32px;border:none;background:transparent;font-size:1.2rem;color:var(--p);cursor:pointer">+</button></div></div>`;
+html+=`<div class="calc-total"><div class="label">Estimated Cost</div><div class="price" id="calcTotal">Rs ${calcTotal().toLocaleString()}</div></div>`;
+html+=`</div>`;
+}
+
+html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0 30px">
+<button style="padding:14px;border:2px solid var(--p);background:#fff;color:var(--p);border-radius:12px;font-weight:700;cursor:pointer;font-size:.9rem" onclick="bookVisit()">Book Visit @ Rs 49</button>
+<button style="padding:14px;border:none;background:linear-gradient(135deg,var(--p),var(--p-light));color:#fff;border-radius:12px;font-weight:700;cursor:pointer;font-size:.9rem;box-shadow:0 4px 15px rgba(13,148,136,.3)" onclick="bookNow()">Book Now</button>
+</div>`;
+
+el.innerHTML=html;
+}
+
+function renderMenu(el,cat){
+const items=menuData[cat]||[];
+if(items.length===0){el.innerHTML='<div style="text-align:center;padding:60px;color:#94A3B8"><i class="fa-solid fa-box-open" style="font-size:3rem;margin-bottom:15px"></i><p>Coming Soon</p></div>';return;}
+
+let html=`<div class="srv-hero"><h2>${cat.charAt(0).toUpperCase()+cat.slice(1)} Services</h2><p>Expert professionals at your service</p><div class="rating"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><span>4.9 (1,800+ reviews)</span></div></div>`;
+
+html+=`<div class="inc-card"><h3><i class="fa-solid fa-circle-check"></i>What's Included</h3><div class="inc-item"><i class="fa-solid fa-check"></i>Verified professional partner</div><div class="inc-item"><i class="fa-solid fa-check"></i>Genuine spare parts</div><div class="inc-item"><i class="fa-solid fa-check"></i>30-day service warranty</div><div class="inc-item"><i class="fa-solid fa-check"></i>Post-service cleanup</div></div>`;
+
+items.forEach(item=>{
+const q=state.cart[item.name]?.qty||0;
+html+=`<div class="menu-card"><div class="menu-info"><h4>${item.name}</h4><p>${item.unit||'Per Service'}</p>${q>0?`<div class="menu-qty"><button onclick="updateCart('${item.name}',${item.price},-1)">-</button><span>${q}</span><button onclick="updateCart('${item.name}',${item.price},1)">+</button></div>`:`<button class="add-btn" style="margin-top:8px" onclick="updateCart('${item.name}',${item.price},1)">ADD +</button>`}</div><div class="menu-price">Rs ${item.price}</div></div>`;
+});
+
+el.innerHTML=html;
+updateCartBar();
+}
+
+function renderRow(type,label,val){
+return `<div class="calc-row" onclick="openSel('${type}')"><span class="calc-label">${label}</span><span class="calc-val">${val} <i class="fa-solid fa-chevron-right" style="font-size:.7rem;color:#94A3B8"></i></span></div>`;
+}
+
+function openSel(type){
+selCtx=type;
+document.getElementById('selOverlay').classList.add('active');
+const body=document.getElementById('selBody');
+let opts=[],title='Select';
+if(type==='city'){title='Select City';opts=paintData.cities;}
+else if(type==='room'){title='Select Area';opts=paintData.rooms;}
+else if(type==='svc'){title='Select Condition';opts=paintData.services;}
+else if(type==='brand'){title='Select Brand';opts=paintData.brands;}
+else if(type==='pcat'){title='Select Type';opts=Object.keys(paintData.catalog[state.paint.brand]).map(c=>({v:c,t:c}));}
+else if(type==='prod'){title='Select Product';opts=paintData.catalog[state.paint.brand][state.paint.cat].map(p=>({v:p.p,t:`${p.n} (Rs ${p.p}/sqft)`}));}
+
+document.getElementById('selTitle').textContent=title;
+body.innerHTML=opts.map(o=>`<div class="sel-opt ${getSelVal(type)==o.v?'sel':''}" onclick="handleSel('${type}','${o.v}','${o.t}')"><span>${o.t}</span>${getSelVal(type)==o.v?'<i class="fa-solid fa-check" style="color:var(--p)"></i>':''}</div>`).join('');
+}
+
+function getSelVal(type){
+if(type==='city')return state.paint.city;
+if(type==='room')return state.paint.room;
+if(type==='svc')return state.paint.svc;
+if(type==='brand')return state.paint.brand;
+if(type==='pcat')return state.paint.cat;
+if(type==='prod')return state.paint.prod;
+return '';
+}
+
+function handleSel(type,val,text){
+if(type==='city')state.paint.city=val;
+if(type==='room'){state.paint.room=parseInt(val);state.paint.roomTxt=text.split('(')[0].trim();}
+if(type==='svc'){state.paint.svc=parseInt(val);state.paint.svcTxt=text.split('(')[0].trim();}
+if(type==='brand'){state.paint.brand=val;state.paint.cat=Object.keys(paintData.catalog[val])[0];const p=paintData.catalog[val][state.paint.cat][0];state.paint.prod=p.p;state.paint.prodName=p.n;}
+if(type==='pcat'){state.paint.cat=val;const p=paintData.catalog[state.paint.brand][val][0];state.paint.prod=p.p;state.paint.prodName=p.n;}
+if(type==='prod'){state.paint.prod=parseInt(val);state.paint.prodName=text.split('(')[0].trim();}
+closeSel();
+renderPaint(document.getElementById('mainContent'),state.cat);
+}
+
+function closeSel(){document.getElementById('selOverlay').classList.remove('active');}
+
+function chgQty(d){if(state.paint.qty+d>0){state.paint.qty+=d;document.getElementById('calcTotal').textContent='Rs '+calcTotal().toLocaleString();}}
+
+function calcTotal(){
+const base=(state.paint.prod+state.paint.svc+(state.pkg!==''?(packages[state.cat]||packages.painting)[state.pkg].price:0));
+let addonTotal=0;
+const ads=addons[state.cat]||[];
+state.addons.forEach(i=>{if(ads[i])addonTotal+=ads[i].price;});
+return Math.round((base+addonTotal)*state.paint.room*state.paint.qty);
+}
+
+function selectPkg(i){state.pkg=i;renderPaint(document.getElementById('mainContent'),state.cat);}
+function toggleAddon(i){const idx=state.addons.indexOf(i);if(idx>-1)state.addons.splice(idx,1);else state.addons.push(i);renderPaint(document.getElementById('mainContent'),state.cat);}
+
+function updateCart(name,price,chg){
+if(!state.cart[name])state.cart[name]={price,qty:0};
+state.cart[name].qty+=chg;
+if(state.cart[name].qty<=0)delete state.cart[name];
+if(state.cat==='painting'||state.cat==='waterproofing'){}
+else{renderMenu(document.getElementById('mainContent'),state.cat);}
+updateCartBar();
+}
+
+function updateCartBar(){
+const items=Object.values(state.cart);
+const count=items.reduce((s,i)=>s+i.qty,0);
+const total=items.reduce((s,i)=>s+(i.price*i.qty),0);
+const bar=document.getElementById('cartBar');
+if(count>0){bar.classList.add('active');document.getElementById('cartInfo').textContent=count+' item'+(count>1?'s':'');document.getElementById('cartPrice').textContent='Rs '+total.toLocaleString();}
+else{bar.classList.remove('active');}
+}
+
+function bookVisit(){
+const order={service:state.cat==='painting'?'Painting Site Visit':'Waterproofing Consultation',total:49,type:'visit',details:[{name:'Site Visit',price:49,qty:1}],date:new Date().toLocaleDateString()};
+localStorage.setItem('pendingOrder',JSON.stringify(order));
+window.location.href='checkout.html';
+}
+
+function bookNow(){
+const total=calcTotal();
+const ads=addons[state.cat]||[];
+const adNames=state.addons.map(i=>ads[i]?.name).filter(Boolean);
+const pkgName=state.pkg!==''?(packages[state.cat]||packages.painting)[state.pkg]?.name:'';
+
+const details=[{name:'Service Type',price:state.paint.svcTxt,qty:1},{name:'Area',price:state.paint.roomTxt,qty:1},{name:'Product',price:state.paint.prodName,qty:1}];
+if(pkgName)details.push({name:pkgName+' Package',price:(packages[state.cat]||packages.painting)[state.pkg].price,qty:1});
+state.addons.forEach(i=>{if(ads[i])details.push({name:ads[i].name,price:ads[i].price,qty:1});});
+
+const order={service:(state.cat==='painting'?'Home Painting':'Waterproofing')+(pkgName?' - '+pkgName:''),total:total,type:'project',details:details,date:new Date().toLocaleDateString()};
+localStorage.setItem('pendingOrder',JSON.stringify(order));
+window.location.href='checkout.html';
+}
+
+function goCheckout(){
+const items=Object.entries(state.cart).map(([n,d])=>({name:n,...d}));
+if(items.length===0)return;
+const total=items.reduce((s,i)=>s+(i.price*i.qty),0);
+const order={service:items[0].name+(items.length>1?' + '+(items.length-1)+' more':''),total:total,type:'service',details:items,date:new Date().toLocaleDateString()};
+localStorage.setItem('pendingOrder',JSON.stringify(order));
+window.location.href='checkout.html';
+}
+
+function goTo(url){window.location.href=url;}
+
+function toast(msg,type='inf',title=''){const w=document.getElementById('toastWrap');const t=document.createElement('div');t.className='toast '+type;const icons={ok:'fa-circle-check',err:'fa-circle-xmark',warn:'fa-triangle-exclamation',inf:'fa-circle-info'};const titles={ok:'Success!',err:'Error!',warn:'Warning!',inf:'Information'};t.innerHTML=`<div class="toast-ico"><i class="fa-solid ${icons[type]}"></i></div><div><div class="toast-tit">${title||titles[type]}</div><div class="toast-msg">${msg}</div></div>`;w.appendChild(t);setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},4000);}
+</script>
+</body>
+</html>

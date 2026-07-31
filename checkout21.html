@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0D9488">
+<title>Checkout | Refine Home Painting</title>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--p:#0D9488;--p-light:#14B8A6;--p-dark:#0F766E;--bg:#F8FAFC;--surface:#FFF;--text:#1E293B;--text2:#64748B;--err:#EF4444;--ok:#22C55E;--warn:#F59E0B}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Plus Jakarta Sans',sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);padding-bottom:90px}
+
+.header{background:var(--surface);padding:14px 16px;display:flex;align-items:center;border-bottom:1px solid #F1F5F9;position:sticky;top:0;z-index:100}
+.back-btn{font-size:1.1rem;margin-right:12px;cursor:pointer;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:10px}
+.header-title{font-weight:700;font-size:1.1rem;flex:1}
+
+/* Steps */
+.steps-wrap{padding:20px;background:var(--surface);margin-bottom:10px}
+.steps{display:flex;justify-content:space-between;position:relative}
+.steps::before{content:'';position:absolute;top:14px;left:10%;right:10%;height:2px;background:#E2E8F0;z-index:0}
+.step{position:relative;z-index:1;text-align:center;width:30%}
+.step-circle{width:30px;height:30px;background:#E2E8F0;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-weight:700;color:var(--text2);font-size:.8rem;transition:.3s}
+.step.active .step-circle{background:var(--p);color:#fff}
+.step.done .step-circle{background:var(--ok);color:#fff}
+.step-label{font-size:.7rem;color:var(--text2);font-weight:600}
+.step.active .step-label{color:var(--p)}
+
+/* Sections */
+.section{display:none;padding:0 16px;animation:si .3s}
+.section.active{display:block}
+@keyframes si{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+.card{background:var(--surface);padding:18px;border-radius:16px;margin-bottom:12px;border:1px solid #F1F5F9;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+.card h3{font-size:1rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3 i{color:var(--p)}
+
+.inp-group{margin-bottom:14px}
+.inp-label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;color:#475569}
+.inp{width:100%;padding:14px;border:2px solid #E2E8F0;border-radius:12px;font-size:1rem;outline:none;transition:.2s;background:#FAFBFC}
+.inp:focus{border-color:var(--p);background:#fff}
+
+/* Address Cards */
+.addr-card{display:flex;align-items:flex-start;gap:12px;padding:16px;border:2px solid #E2E8F0;border-radius:14px;margin-bottom:10px;cursor:pointer;transition:.2s;background:var(--surface)}
+.addr-card:hover{border-color:var(--p-light)}
+.addr-card.selected{border-color:var(--p);background:#F0FDFA}
+.addr-radio{width:20px;height:20px;border:2px solid #CBD5E1;border-radius:50%;margin-top:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.addr-card.selected .addr-radio{border-color:var(--p);background:var(--p)}
+.addr-radio i{color:#fff;font-size:.6rem;opacity:0}
+.addr-card.selected .addr-radio i{opacity:1}
+.addr-info{flex:1}
+.addr-info h4{font-size:.9rem;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.addr-tag{font-size:.65rem;padding:2px 8px;border-radius:4px;background:#E2E8F0;color:#475569;font-weight:600}
+.addr-info p{font-size:.85rem;color:var(--text2);line-height:1.5;margin-top:4px}
+.addr-actions{display:flex;gap:12px;margin-top:8px}
+.addr-actions button{font-size:.8rem;color:var(--p);background:none;border:none;font-weight:600;cursor:pointer;padding:0}
+.add-addr-btn{width:100%;padding:14px;border:2px dashed var(--p);border-radius:14px;background:#F0FDFA;color:var(--p);font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+
+/* Date & Time */
+.date-scroll{display:flex;overflow-x:auto;gap:10px;padding-bottom:10px;scrollbar-width:none}
+.date-scroll::-webkit-scrollbar{display:none}
+.date-card{min-width:70px;padding:14px 8px;background:#F1F5F9;border-radius:12px;text-align:center;cursor:pointer;border:2px solid transparent;transition:.2s}
+.date-card.active{background:#F0FDFA;border-color:var(--p);color:var(--p)}
+.date-card.past{opacity:.4;cursor:not-allowed}
+.date-day{font-size:.7rem;font-weight:600;text-transform:uppercase;margin-bottom:4px}
+.date-num{font-size:1.1rem;font-weight:800}
+
+.slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:15px}
+.slot-btn{padding:12px;border:1px solid #CBD5E1;border-radius:10px;text-align:center;cursor:pointer;font-weight:600;font-size:.85rem;background:var(--surface);transition:.2s}
+.slot-btn.selected{background:var(--p);color:#fff;border-color:var(--p);box-shadow:0 4px 10px rgba(13,148,136,.2)}
+.slot-btn.disabled{opacity:.4;cursor:not-allowed}
+
+/* Payment */
+.pay-opt{display:flex;align-items:center;padding:16px;border:2px solid #E2E8F0;border-radius:14px;margin-bottom:10px;cursor:pointer;transition:.2s;background:var(--surface)}
+.pay-opt.selected{border-color:var(--p);background:#F0FDFA}
+.pay-opt.disabled{opacity:.5;cursor:not-allowed}
+.pay-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-right:14px;background:#F1F5F9}
+.pay-info{flex:1}
+.pay-info h4{font-size:.95rem;font-weight:700}
+.pay-info p{font-size:.8rem;color:var(--text2);margin-top:2px}
+.pay-check{margin-left:auto;width:22px;height:22px;border:2px solid #CBD5E1;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.pay-opt.selected .pay-check{border-color:var(--p);background:var(--p)}
+.pay-check i{color:#fff;font-size:.6rem;opacity:0}
+.pay-opt.selected .pay-check i{opacity:1}
+
+/* Wallet */
+.wallet-card{background:linear-gradient(135deg,var(--p),var(--p-dark));border-radius:16px;padding:20px;color:#fff;margin-bottom:16px;position:relative;overflow:hidden}
+.wallet-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,.1);border-radius:50%}
+.wallet-label{font-size:.85rem;opacity:.9;margin-bottom:4px;position:relative}
+.wallet-bal{font-size:1.8rem;font-weight:800;position:relative}
+.wallet-bal span{font-size:.9rem;opacity:.8}
+
+/* Bill */
+.bill-row{display:flex;justify-content:space-between;margin-bottom:10px;font-size:.9rem;color:#475569}
+.bill-total{border-top:1px dashed #CBD5E1;padding-top:12px;margin-top:12px;font-weight:800;font-size:1.1rem;color:var(--p);display:flex;justify-content:space-between}
+.bill-savings{color:var(--ok);font-size:.85rem;margin-top:6px}
+
+/* Bottom Bar */
+.bottom-bar{position:fixed;bottom:0;width:100%;background:var(--surface);padding:14px 16px;border-top:1px solid #F1F5F9;display:flex;justify-content:space-between;align-items:center;z-index:100}
+.total-display{font-size:1.1rem;font-weight:800}
+.total-display span{font-size:.75rem;color:var(--text2);font-weight:500;display:block}
+.action-btn{background:linear-gradient(135deg,var(--p),var(--p-light));color:#fff;border:none;padding:12px 28px;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer;box-shadow:0 4px 15px rgba(13,148,136,.3)}
+.action-btn:disabled{background:#CBD5E1;cursor:not-allowed;box-shadow:none}
+
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:99999;display:none;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .3s}
+.modal.active{display:flex;opacity:1}
+.modal-box{background:#fff;width:100%;max-width:360px;border-radius:24px;overflow:hidden;transform:scale(.9);opacity:0;transition:all .3s cubic-bezier(.32,.72,0,1);text-align:center;padding:30px 25px}
+.modal.active .modal-box{transform:scale(1);opacity:1}
+.modal-icon{width:70px;height:70px;border-radius:50%;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff}
+.modal-icon.ok{background:linear-gradient(135deg,var(--ok),#16A34A)}
+.modal-icon.err{background:linear-gradient(135deg,var(--err),#DC2626)}
+.modal h3{font-size:1.3rem;font-weight:800;margin-bottom:10px}
+.modal p{color:var(--text2);font-size:.95rem;margin-bottom:25px;line-height:1.5}
+.modal-btn{width:100%;padding:14px;border:none;border-radius:12px;font-weight:700;font-size:.95rem;cursor:pointer;background:linear-gradient(135deg,var(--p),var(--p-light));color:#fff}
+
+/* Confetti */
+.confetti{position:fixed;width:8px;height:8px;animation:cf 3s ease-out forwards;z-index:999999;pointer-events:none}
+@keyframes cf{0%{transform:translateY(-100px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+/* Toast */
+.toast-wrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:100000;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:92%;max-width:380px}
+.toast{background:#fff;padding:14px 16px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.15);display:flex;align-items:center;gap:12px;transform:translateY(-80px);opacity:0;transition:all .4s cubic-bezier(.32,.72,0,1);pointer-events:all;border-left:4px solid var(--p)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-left-color:var(--ok)}.toast.err{border-left-color:var(--err)}.toast.warn{border-left-color:var(--warn)}
+.toast-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.toast.ok .toast-ico{background:#DCFCE7;color:var(--ok)}.toast.err .toast-ico{background:#FEE2E2;color:var(--err)}.toast.warn .toast-ico{background:#FEF3C7;color:var(--warn)}.toast.inf .toast-ico{background:#F0FDFA;color:var(--p)}
+.toast-tit{font-weight:700;color:#1E293B;font-size:.9rem}.toast-msg{color:var(--text2);font-size:.8rem}
+
+@media(min-width:480px){body{max-width:480px;margin:0 auto}.bottom-bar{max-width:480px;left:50%;transform:translateX(-50%)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+<i class="fa-solid fa-arrow-left back-btn" onclick="history.back()"></i>
+<div class="header-title">Checkout</div>
+</div>
+
+<div class="steps-wrap">
+<div class="steps">
+<div class="step active" id="s1"><div class="step-circle">1</div><div class="step-label">Address</div></div>
+<div class="step" id="s2"><div class="step-circle">2</div><div class="step-label">Slot</div></div>
+<div class="step" id="s3"><div class="step-circle">3</div><div class="step-label">Payment</div></div>
+</div>
+</div>
+
+<div id="errBox" style="display:none;text-align:center;padding:50px">
+<i class="fa-solid fa-circle-exclamation" style="font-size:3rem;color:var(--err);margin-bottom:15px"></i>
+<h3>No Booking Found</h3><p style="color:var(--text2);margin:10px 0 20px">Please select a service first.</p>
+<button onclick="window.location.href='services.html'" class="action-btn">Browse Services</button>
+</div>
+
+<div id="checkoutForm">
+<!-- Step 1: Address -->
+<div id="step1" class="section active">
+<div class="card">
+<h3><i class="fa-solid fa-user"></i>Contact Details</h3>
+<div class="inp-group"><label class="inp-label">Full Name *</label><input type="text" class="inp" id="uName" placeholder="Enter your name"></div>
+<div class="inp-group"><label class="inp-label">Phone Number *</label><input type="tel" class="inp" id="uPhone" placeholder="Enter mobile number" maxlength="10"></div>
+</div>
+
+<div class="card">
+<h3><i class="fa-solid fa-location-dot"></i>Select Address</h3>
+<div id="addressList"></div>
+<button class="add-addr-btn" onclick="openAddrModal()"><i class="fa-solid fa-plus"></i>Add New Address</button>
+</div>
+</div>
+
+<!-- Step 2: Slot -->
+<div id="step2" class="section">
+<div class="card">
+<h3><i class="fa-regular fa-calendar"></i>Select Date</h3>
+<div class="date-scroll" id="dateScroll"></div>
+<h3 style="margin-top:20px"><i class="fa-regular fa-clock" style="color:var(--p);margin-right:6px"></i>Select Time</h3>
+<div class="slot-grid" id="slotGrid"></div>
+</div>
+</div>
+
+<!-- Step 3: Payment -->
+<div id="step3" class="section">
+<div class="wallet-card">
+<div class="wallet-label"><i class="fa-solid fa-wallet" style="margin-right:6px"></i>Wallet Balance</div>
+<div class="wallet-bal">Rs <span id="walletBal">0</span></div>
+</div>
+
+<div class="card">
+<h3><i class="fa-solid fa-file-invoice"></i>Order Summary</h3>
+<div id="billItems"></div>
+<div class="bill-row" style="margin-top:8px"><span>Platform Fee</span><span>Rs 49</span></div>
+<div class="bill-row"><span>GST (18%)</span><span id="gstAmt">Rs 0</span></div>
+<div class="bill-total"><span>To Pay</span><span id="finalTotal">Rs 0</span></div>
+<div class="bill-savings" id="savingsText" style="display:none"><i class="fa-solid fa-tag" style="margin-right:4px"></i>You saved Rs <span id="saveAmt">0</span></div>
+</div>
+
+<h3 style="margin:20px 16px 12px;font-size:1rem">Payment Method</h3>
+
+<div class="pay-opt selected" onclick="selPay('online')" id="payOnline">
+<div class="pay-icon" style="background:#F0FDFA;color:var(--p)"><i class="fa-solid fa-credit-card"></i></div>
+<div class="pay-info"><h4>Pay Online</h4><p>UPI, Cards, Netbanking</p></div>
+<div class="pay-check"><i class="fa-solid fa-check"></i></div>
+</div>
+
+<div class="pay-opt" onclick="selPay('wallet')" id="payWallet">
+<div class="pay-icon" style="background:#FEF3C7;color:var(--warn)"><i class="fa-solid fa-wallet"></i></div>
+<div class="pay-info"><h4>Pay via Wallet</h4><p>Use your Refine wallet balance</p></div>
+<div class="pay-check"><i class="fa-solid fa-check"></i></div>
+</div>
+
+<div class="pay-opt" onclick="selPay('cod')" id="payCOD">
+<div class="pay-icon" style="background:#DCFCE7;color:var(--ok)"><i class="fa-solid fa-money-bill-wave"></i></div>
+<div class="pay-info"><h4>Cash on Service</h4><p>Pay after service completion</p></div>
+<div class="pay-check"><i class="fa-solid fa-check"></i></div>
+</div>
+</div>
+</div>
+
+<div class="bottom-bar">
+<div class="total-display">Rs <span id="footTotal">0</span><span id="footLabel">Total</span></div>
+<button class="action-btn" id="mainBtn" onclick="nextStep()">Next Step</button>
+</div>
+
+<!-- Success Modal -->
+<div class="modal" id="succModal">
+<div class="modal-box">
+<div class="modal-icon ok"><i class="fa-solid fa-check"></i></div>
+<h3 id="succTitle">Order Confirmed!</h3>
+<p id="succMsg">Your booking has been placed successfully.</p>
+<button class="modal-btn" onclick="window.location.href='bookings.html'">View My Bookings</button>
+</div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal" id="errModal">
+<div class="modal-box">
+<div class="modal-icon err"><i class="fa-solid fa-xmark"></i></div>
+<h3 id="errTitle">Payment Failed</h3>
+<p id="errMsg">Something went wrong. Please try again.</p>
+<button class="modal-btn" onclick="closeErr()">Try Again</button>
+</div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+const firebaseConfig={apiKey:"AIzaSyCmqBL6a0muExq2qBsSR6M3C_8AyXcJ2k8",authDomain:"urban-paint-pro.firebaseapp.com",databaseURL:"https://urban-paint-pro-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"urban-paint-pro",storageBucket:"urban-paint-pro.firebasestorage.app",messagingSenderId:"929763117480",appId:"1:929763117480:web:560057baeb12672078b59d"};
+try{firebase.initializeApp(firebaseConfig);}catch(e){}
+const db=firebase.database(),auth=firebase.auth();
+
+let step=1,selDate='',selTime='',payMethod='online',orderData=null,selAddr=null,walletBal=0;
+
+window.onload=()=>{
+try{orderData=JSON.parse(localStorage.getItem('pendingOrder'));if(!orderData)throw new Error();}catch(e){document.getElementById('checkoutForm').style.display='none';document.getElementById('errBox').style.display='block';return;}
+
+const total=orderData.total||0;
+const gst=Math.round(total*0.18);
+const platform=49;
+const grand=total+gst+platform;
+orderData.grandTotal=grand;
+orderData.gst=gst;
+orderData.platformFee=platform;
+
+document.getElementById('footTotal').textContent=grand.toLocaleString();
+document.getElementById('finalTotal').textContent='Rs '+grand.toLocaleString();
+document.getElementById('gstAmt').textContent='Rs '+gst;
+
+renderBill();
+genDates();
+genSlots();
+
+auth.onAuthStateChanged(user=>{
+if(user){
+if(user.displayName)document.getElementById('uName').value=user.displayName;
+if(user.phoneNumber)document.getElementById('uPhone').value=user.phoneNumber.replace('+91','');
+loadAddresses(user.uid);
+loadWallet(user.uid);
+db.ref('users/'+user.uid+'/profile').once('value').then(s=>{
+const p=s.val();
+if(p){if(p.name&&!document.getElementById('uName').value)document.getElementById('uName').value=p.name;if(p.phone&&!document.getElementById('uPhone').value)document.getElementById('uPhone').value=p.phone;}
+});
+}
+});
+};
+
+function renderBill(){
+const c=document.getElementById('billItems');
+if(orderData.details&&Array.isArray(orderData.details)){
+c.innerHTML=orderData.details.map(i=>`<div class="bill-row"><span>${i.name}${i.qty>1?' x'+i.qty:''}</span><span>Rs ${(i.price*i.qty).toLocaleString()}</span></div>`).join('');
+}else{
+c.innerHTML=`<div class="bill-row"><span>${orderData.service}</span><span>Rs ${orderData.total}</span></div>`;
+}
+}
+
+function loadAddresses(uid){
+db.ref('users/'+uid+'/addresses').once('value').then(s=>{
+const d=s.val()||{};
+const list=document.getElementById('addressList');
+const addrs=Object.entries(d);
+if(addrs.length===0){
+list.innerHTML='<div style="text-align:center;padding:20px;color:#94A3B8;font-size:.9rem">No saved addresses. Add one below.</div>';
+return;
+}
+list.innerHTML=addrs.map(([k,a])=>`<div class="addr-card ${selAddr===k?'selected':''}" onclick="selAddr='${k}';loadAddresses('${uid}')"><div class="addr-radio"><i class="fa-solid fa-check"></i></div><div class="addr-info"><h4>${a.label||'Address'} <span class="addr-tag">${a.type||'Other'}</span></h4><p>${a.house||''}, ${a.area||''}, ${a.city||''} - ${a.pincode||''}</p></div></div>`).join('');
+});
+}
+
+function loadWallet(uid){
+db.ref('users/'+uid+'/wallet/balance').on('value',s=>{
+walletBal=s.val()||0;
+document.getElementById('walletBal').textContent=walletBal.toLocaleString();
+const w=document.getElementById('payWallet');
+if(walletBal<=0){w.classList.add('disabled');w.onclick=null;}
+});
+}
+
+function genDates(){
+const c=document.getElementById('dateScroll');
+const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let html='';
+for(let i=0;i<10;i++){
+const d=new Date();d.setDate(d.getDate()+i);
+const dn=i===0?'Today':(i===1?'Tmrw':days[d.getDay()]);
+const dt=d.getDate();
+const fd=d.toLocaleDateString('en-GB');
+if(i===1)selDate=fd;
+const cls=i===1?'active':(i===0?'past':'');
+html+=`<div class="date-card ${cls}" ${i===0?'':`onclick="pickDate(this,'${fd}')"`}><div class="date-day">${dn}</div><div class="date-num">${dt}</div></div>`;
+}
+c.innerHTML=html;
+}
+
+function pickDate(el,date){
+document.querySelectorAll('.date-card').forEach(e=>e.classList.remove('active'));
+el.classList.add('active');
+selDate=date;
+}
+
+function genSlots(){
+const c=document.getElementById('slotGrid');
+const slots=['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM'];
+c.innerHTML=slots.map((t,i)=>`<div class="slot-btn ${i===2?'selected':''}" onclick="pickSlot(this,'${t}')">${t}</div>`).join('');
+selTime=slots[2];
+}
+
+function pickSlot(el,time){
+document.querySelectorAll('.slot-btn').forEach(e=>e.classList.remove('selected'));
+el.classList.add('selected');
+selTime=time;
+}
+
+function nextStep(){
+if(step===1){
+if(!document.getElementById('uName').value||!document.getElementById('uPhone').value){toast('Please fill all required fields','warn');return;}
+if(!selAddr){toast('Please select a delivery address','warn');return;}
+step=2;
+}else if(step===2){
+if(!selDate||!selTime){toast('Please select date and time','warn');return;}
+step=3;
+document.getElementById('mainBtn').textContent=payMethod==='online'?'Pay Rs '+orderData.grandTotal:(payMethod==='wallet'?'Pay via Wallet':'Place Order');
+}else if(step===3){
+processOrder();return;
+}
+updateUI();
+}
+
+function updateUI(){
+document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));
+document.getElementById('step'+step).classList.add('active');
+[1,2,3].forEach(i=>{
+const el=document.getElementById('s'+i);
+if(i<step){el.classList.add('done');el.classList.remove('active');}
+else if(i===step){el.classList.add('active');el.classList.remove('done');}
+else{el.classList.remove('active','done');}
+});
+}
+
+function selPay(m){
+if(m==='wallet'&&walletBal<=0)return;
+payMethod=m;
+document.querySelectorAll('.pay-opt').forEach(e=>e.classList.remove('selected'));
+document.getElementById('pay'+(m==='online'?'Online':(m==='wallet'?'Wallet':'COD'))).classList.add('selected');
+document.getElementById('mainBtn').textContent=m==='online'?'Pay Rs '+orderData.grandTotal:(m==='wallet'?'Pay via Wallet':'Place Order');
+}
+
+async function processOrder(){
+const user=auth.currentUser;
+if(!user){toast('Please login first','err');return;}
+const btn=document.getElementById('mainBtn');btn.disabled=true;btn.textContent='Processing...';
+
+const fullOrder={
+orderId:orderData.orderId||'',service:orderData.service||'Service',type:orderData.type||'service',
+userId:user.uid,customer:{name:document.getElementById('uName').value,phone:document.getElementById('uPhone').value},
+slot:{date:selDate,time:selTime},amount:orderData.total||0,total:orderData.grandTotal,gst:orderData.gst,platformFee:orderData.platformFee,
+details:orderData.details||[],paymentMethod:payMethod,paymentStatus:payMethod==='cod'?'pending_cod':'pending',
+status:'pending',createdAt:firebase.database.ServerValue.TIMESTAMP,addrId:selAddr
+};
+
+if(payMethod==='wallet'){
+if(walletBal<orderData.grandTotal){toast('Insufficient wallet balance','err');btn.disabled=false;btn.textContent='Pay via Wallet';return;}
+await db.ref('users/'+user.uid+'/wallet/balance').set(walletBal-orderData.grandTotal);
+await db.ref('users/'+user.uid+'/wallet/transactions').push({type:'debit',amount:orderData.grandTotal,desc:orderData.service,date:firebase.database.ServerValue.TIMESTAMP});
+fullOrder.paymentStatus='paid_via_wallet';
+saveOrd(fullOrder,user);
+}else if(payMethod==='cod'){
+saveOrd(fullOrder,user);
+}else{
+openRazorpay(fullOrder,user);
+}
+}
+
+async function saveOrd(order,user){
+try{
+if(order.addrId){
+const aSnap=await db.ref('users/'+user.uid+'/addresses/'+order.addrId).once('value');
+const a=aSnap.val();
+if(a)order.address=a;
+}
+const ref=db.ref('orders').push();
+await ref.set(order);
+await db.ref('users/'+user.uid+'/orders/'+ref.key).set(order);
+await db.ref('users/'+user.uid+'/notifications').push({title:'Booking Confirmed',body:'Your '+order.service+' has been booked for '+order.slot.date,read:false,type:'booking',createdAt:firebase.database.ServerValue.TIMESTAMP});
+showSucc(order.type==='advance_payment'?'Advance Paid!':'Order Confirmed!',order.type==='advance_payment'?'Work has been scheduled.':'Booking confirmed for '+order.slot.date);
+}catch(e){console.error(e);showErr('Error','Something went wrong. Please try again.');}
+}
+
+function openRazorpay(order,user){
+const options={key:"rzp_live_SDPY6guf8rfUr4",amount:(order.grandTotal||1)*100,currency:"INR",name:"Refine Home Painting",description:order.service,
+handler:function(res){order.paymentStatus='paid';order.paymentId=res.razorpay_payment_id;saveOrd(order,user);},
+modal:{ondismiss:function(){document.getElementById('mainBtn').disabled=false;document.getElementById('mainBtn').textContent='Pay Rs '+order.grandTotal;showErr('Cancelled','Payment was cancelled.');}},
+prefill:{name:order.customer.name,contact:order.customer.phone}};
+const rzp=new Razorpay(options);
+rzp.on('payment.failed',function(res){document.getElementById('mainBtn').disabled=false;showErr('Failed',res.error.description);});
+rzp.open();
+}
+
+function showSucc(t,m){
+document.getElementById('succTitle').textContent=t;
+document.getElementById('succMsg').textContent=m;
+document.getElementById('succModal').classList.add('active');
+confetti();
+setTimeout(()=>window.location.href='bookings.html',3000);
+}
+
+function showErr(t,m){
+document.getElementById('errTitle').textContent=t;
+document.getElementById('errMsg').textContent=m;
+document.getElementById('errModal').classList.add('active');
+}
+
+function closeErr(){
+document.getElementById('errModal').classList.remove('active');
+document.getElementById('mainBtn').disabled=false;
+}
+
+function confetti(){
+const colors=['#0D9488','#14B8A6','#F59E0B','#22C55E','#3B82F6','#EC4899'];
+for(let i=0;i<40;i++){const c=document.createElement('div');c.className='confetti';c.style.left=Math.random()*100+'%';c.style.background=colors[Math.floor(Math.random()*colors.length)];c.style.animationDelay=Math.random()*2+'s';c.style.borderRadius=Math.random()>0.5?'50%':'0';document.body.appendChild(c);setTimeout(()=>c.remove(),3000);}
+}
+
+function toast(msg,type='inf',title=''){const w=document.getElementById('toastWrap');const t=document.createElement('div');t.className='toast '+type;const icons={ok:'fa-circle-check',err:'fa-circle-xmark',warn:'fa-triangle-exclamation',inf:'fa-circle-info'};const titles={ok:'Success!',err:'Error!',warn:'Warning!',inf:'Information'};t.innerHTML=`<div class="toast-ico"><i class="fa-solid ${icons[type]}"></i></div><div><div class="toast-tit">${title||titles[type]}</div><div class="toast-msg">${msg}</div></div>`;w.appendChild(t);setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},4000);}
+</script>
+</body>
+</html>

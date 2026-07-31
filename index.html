@@ -1,542 +1,408 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0D9488">
-    <title>Partner Login | UrbanPaintPro</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <style>
-        :root { --p: #0D9488; --p-light: #14B8A6; --bg: #F0FDFA; --text: #134E4A; --white: #FFFFFF; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); color: var(--text); min-height: 100vh; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0D9488">
+<title>Refine Home Painting</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--p:#0D9488;--p-light:#14B8A6;--p-dark:#0F766E;--bg:#F0FDFA;--surface:#FFF;--text:#134E4A;--text2:#64748B;--err:#EF4444;--ok:#22C55E;--warn:#F59E0B}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Plus Jakarta Sans',sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
-        .container { padding: 20px; max-width: 480px; margin: 0 auto; }
+/* Splash */
+#splash{position:fixed;inset:0;background:linear-gradient(135deg,var(--p),var(--p-dark));z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s}
+#splash.hide{opacity:0;pointer-events:none}
+.splash-logo{width:90px;height:90px;background:#fff;border-radius:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:sp .6s cubic-bezier(.32,.72,0,1)}
+.splash-logo i{font-size:2.5rem;color:var(--p)}
+.splash-title{color:#fff;font-size:1.5rem;font-weight:800;margin-top:20px;animation:fu .8s .2s both}
+.splash-sub{color:rgba(255,255,255,.8);font-size:.9rem;margin-top:6px;animation:fu .8s .4s both}
+.splash-loader{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-top:35px}
+@keyframes sp{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes fu{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, var(--p), var(--p-light));
-            color: white;
-            padding: 40px 20px;
-            border-radius: 0 0 30px 30px;
-            text-align: center;
-            margin: -20px -20px 30px;
-        }
-        .hero-icon { font-size: 4rem; margin-bottom: 15px; }
-        .hero h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 10px; }
-        .hero p { opacity: 0.9; font-size: 0.95rem; }
+/* Onboarding */
+#onb{position:fixed;inset:0;background:#fff;z-index:99998;display:none;flex-direction:column}
+#onb.active{display:flex}
+.onb-wrap{flex:1;position:relative;overflow:hidden}
+.onb-slide{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px;opacity:0;transform:translateX(80px);transition:all .5s cubic-bezier(.32,.72,0,1);pointer-events:none}
+.onb-slide.active{opacity:1;transform:translateX(0);pointer-events:all}
+.onb-img{width:200px;height:200px;border-radius:50%;margin-bottom:30px;display:flex;align-items:center;justify-content:center;font-size:4rem}
+.onb-img.i1{background:linear-gradient(135deg,#F0FDFA,#CCFBF1);color:var(--p)}
+.onb-img.i2{background:linear-gradient(135deg,#FEF3C7,#FDE68A);color:var(--warn)}
+.onb-img.i3{background:linear-gradient(135deg,#DCFCE7,#BBF7D0);color:var(--ok)}
+.onb-title{font-size:1.4rem;font-weight:800;color:var(--text);text-align:center;margin-bottom:10px}
+.onb-desc{font-size:.95rem;color:var(--text2);text-align:center;line-height:1.6;max-width:300px}
+.onb-foot{padding:30px;background:#fff}
+.onb-dots{display:flex;justify-content:center;gap:8px;margin-bottom:20px}
+.onb-dot{width:8px;height:8px;border-radius:50%;background:#E2E8F0;transition:.3s}
+.onb-dot.active{width:24px;border-radius:4px;background:var(--p)}
+.onb-btn{width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--p),var(--p-light));color:#fff;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 4px 15px rgba(13,148,136,.3)}
+.onb-skip{text-align:center;margin-top:14px;color:var(--text2);font-size:.9rem;cursor:pointer}
 
-        /* Stats Bar */
-        .stats-bar {
-            display: flex;
-            justify-content: space-around;
-            background: white;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(13,148,136,0.1);
-            margin-bottom: 25px;
-        }
-        .stat-item { text-align: center; }
-        .stat-number { font-size: 1.5rem; font-weight: 800; color: var(--p); }
-        .stat-label { font-size: 0.75rem; color: #64748B; margin-top: 5px; }
+/* Login */
+#login{position:fixed;inset:0;background:#fff;z-index:99997;display:none;flex-direction:column;overflow-y:auto}
+#login.active{display:flex}
+.login-top{background:linear-gradient(135deg,var(--p),var(--p-dark));padding:50px 30px 70px;text-align:center;color:#fff;border-radius:0 0 40px 40px}
+.login-top i{font-size:2.8rem;margin-bottom:15px}
+.login-top h2{font-size:1.7rem;font-weight:800}
+.login-top p{opacity:.9;margin-top:6px;font-size:.95rem}
+.login-body{padding:30px 25px;flex:1}
+.login-btn{width:100%;padding:16px;border-radius:14px;border:2px solid #E2E8F0;background:#fff;display:flex;align-items:center;justify-content:center;gap:12px;font-weight:700;font-size:1rem;cursor:pointer;margin-bottom:12px;transition:.2s}
+.login-btn:hover{border-color:var(--p);background:#F0FDFA}
+.login-btn img{width:22px}
+.login-div{text-align:center;margin:18px 0;color:var(--text2);font-size:.85rem;position:relative}
+.login-div::before,.login-div::after{content:'';position:absolute;top:50%;width:35%;height:1px;background:#E2E8F0}
+.login-div::before{left:0}.login-div::after{right:0}
+.phone-wrap{display:flex;gap:10px;margin-bottom:12px}
+.phone-prefix{padding:16px;background:#F1F5F9;border-radius:14px;font-weight:700}
+.phone-inp{flex:1;padding:16px;border:2px solid #E2E8F0;border-radius:14px;outline:none;font-size:1rem}
+.phone-inp:focus{border-color:var(--p)}
+.otp-inp{width:100%;padding:16px;border:2px solid #E2E8F0;border-radius:14px;outline:none;font-size:1rem;text-align:center;letter-spacing:10px;margin-bottom:12px}
+.login-submit{width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--p),var(--p-light));color:#fff;font-weight:700;font-size:1rem;cursor:pointer}
+.login-submit:disabled{opacity:.6;cursor:not-allowed}
+.login-terms{text-align:center;font-size:.75rem;color:var(--text2);margin-top:20px}
+.login-terms a{color:var(--p);text-decoration:none}
 
-        /* Auth Card */
-        .auth-card {
-            background: white;
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        }
-        .auth-tabs {
-            display: flex;
-            background: #F1F5F9;
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 25px;
-        }
-        .auth-tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
-            border: none;
-            background: transparent;
-            color: #64748B;
-        }
-        .auth-tab.active {
-            background: white;
-            color: var(--p);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
+/* City */
+#city{position:fixed;inset:0;background:#fff;z-index:99996;display:none;flex-direction:column}
+#city.active{display:flex}
+.city-head{padding:20px;border-bottom:1px solid #F1F5F9}
+.city-head h3{font-size:1.2rem}.city-head p{color:var(--text2);font-size:.9rem;margin-top:4px}
+.city-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:20px;overflow-y:auto}
+.city-card{padding:20px;border:2px solid #E2E8F0;border-radius:16px;text-align:center;cursor:pointer;transition:.2s}
+.city-card:hover{border-color:var(--p);background:#F0FDFA}
+.city-card i{font-size:1.4rem;color:var(--p);margin-bottom:8px;display:block}
+.city-card span{font-weight:700;color:var(--text)}
+.city-detect{margin:0 20px 20px;padding:14px;background:#F0FDFA;border:2px dashed var(--p);border-radius:14px;display:flex;align-items:center;justify-content:center;gap:10px;color:var(--p);font-weight:600;cursor:pointer}
 
-        .form-group { margin-bottom: 20px; }
-        .form-label {
-            display: block;
-            font-weight: 600;
-            color: #475569;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-        .form-input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #E2E8F0;
-            border-radius: 12px;
-            font-size: 1rem;
-            transition: 0.2s;
-            outline: none;
-        }
-        .form-input:focus {
-            border-color: var(--p);
-            background: #F0FDFA;
-        }
-        .form-input-icon {
-            position: relative;
-        }
-        .form-input-icon i {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--p);
-        }
-        .form-input-icon input {
-            padding-left: 45px;
-        }
+/* Main App */
+#main{display:none;padding-bottom:90px}
+#main.active{display:block}
+.header{position:fixed;top:0;width:100%;height:60px;background:var(--surface);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:100;border-bottom:1px solid #F1F5F9}
+.logo{font-weight:800;font-size:1.1rem;color:var(--p)}
+.h-actions{display:flex;align-items:center;gap:10px}
+.h-btn{width:38px;height:38px;border-radius:12px;background:#F0FDFA;display:flex;align-items:center;justify-content:center;color:var(--p);font-size:1rem;cursor:pointer;position:relative;border:none}
+.h-btn .badge{position:absolute;top:-2px;right:-2px;width:16px;height:16px;background:var(--err);color:#fff;border-radius:50%;font-size:.6rem;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.h-prof{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--p);cursor:pointer}
 
-        .btn-primary {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, var(--p), var(--p-light));
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: 0.2s;
-        }
-        .btn-primary:active { transform: scale(0.98); }
+.search-sec{margin-top:60px;padding:16px;background:var(--surface)}
+.search-bar{display:flex;align-items:center;gap:12px;background:#F1F5F9;padding:14px 16px;border-radius:14px;border:2px solid transparent;transition:.2s;cursor:pointer}
+.search-bar:focus-within{border-color:var(--p);background:#fff;box-shadow:0 4px 15px rgba(13,148,136,.08)}
+.search-bar i{color:var(--text2);font-size:1rem}
+.search-bar span{color:var(--text2);font-size:.95rem;flex:1}
+.loc-pill{display:flex;align-items:center;gap:6px;margin-top:12px;padding:8px 14px;background:#F0FDFA;border-radius:20px;width:fit-content;font-size:.8rem;font-weight:600;color:var(--p);cursor:pointer}
 
-        .divider {
-            text-align: center;
-            margin: 25px 0;
-            color: #94A3B8;
-            font-size: 0.85rem;
-            position: relative;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            width: 40%;
-            height: 1px;
-            background: #E2E8F0;
-        }
-        .divider::before { left: 0; }
-        .divider::after { right: 0; }
+.hero{margin:0 16px 20px;padding:25px 20px;background:linear-gradient(135deg,var(--p),var(--p-dark));border-radius:20px;color:#fff;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:130px;height:130px;background:rgba(255,255,255,.1);border-radius:50%}
+.hero h2{font-size:1.2rem;font-weight:800;margin-bottom:6px;position:relative}
+.hero p{opacity:.9;font-size:.9rem;margin-bottom:15px;position:relative}
+.hero-btn{background:#fff;color:var(--p);border:none;padding:10px 20px;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;position:relative}
 
-        .google-btn {
-            width: 100%;
-            padding: 14px;
-            background: white;
-            border: 2px solid #E2E8F0;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
+.sec-head{display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin:25px 0 12px}
+.sec-head h3{font-size:1.05rem;font-weight:700}
+.sec-head a{font-size:.85rem;color:var(--p);font-weight:600;text-decoration:none}
 
-        /* Category Selection (for register) */
-        .category-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .category-item {
-            padding: 15px;
-            border: 2px solid #E2E8F0;
-            border-radius: 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .category-item i {
-            font-size: 1.5rem;
-            color: var(--p);
-            margin-bottom: 8px;
-            display: block;
-        }
-        .category-item.selected {
-            border-color: var(--p);
-            background: #F0FDFA;
-        }
-        .category-item span {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #334155;
-        }
+.srv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 16px}
+.srv-card{background:var(--surface);padding:14px 6px;border-radius:16px;text-align:center;cursor:pointer;transition:.2s;border:1px solid #F1F5F9;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.srv-card:active{transform:scale(.95)}
+.srv-icon{width:46px;height:46px;border-radius:14px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.srv-name{font-size:.7rem;font-weight:700;color:#475569}
 
-        /* Features */
-        .features {
-            margin-top: 30px;
-        }
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: white;
-            border-radius: 12px;
-            margin-bottom: 10px;
-        }
-        .feature-icon {
-            width: 45px;
-            height: 45px;
-            background: #F0FDFA;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--p);
-            font-size: 1.2rem;
-        }
-        .feature-text h4 { font-size: 0.95rem; margin-bottom: 3px; }
-        .feature-text p { font-size: 0.8rem; color: #64748B; }
+.promo-scroll{display:flex;gap:12px;padding:0 16px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x mandatory}
+.promo-scroll::-webkit-scrollbar{display:none}
+.promo-card{min-width:260px;padding:20px;border-radius:20px;scroll-snap-align:start;position:relative;overflow:hidden}
+.promo-card.p1{background:linear-gradient(135deg,#F59E0B,#D97706);color:#fff}
+.promo-card.p2{background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff}
+.promo-card.p3{background:linear-gradient(135deg,#EC4899,#DB2777);color:#fff}
+.promo-card h4{font-size:1.05rem;font-weight:800;margin-bottom:6px}
+.promo-card p{font-size:.85rem;opacity:.9;margin-bottom:12px}
+.promo-card button{background:#fff;color:var(--text);border:none;padding:8px 16px;border-radius:8px;font-weight:700;font-size:.8rem;cursor:pointer}
 
-        /* Toast */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-        }
-        .toast {
-            background: white;
-            padding: 16px 20px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 300px;
-            transform: translateY(-100px);
-            opacity: 0;
-            transition: all 0.4s;
-            pointer-events: all;
-            border-left: 4px solid var(--p);
-        }
-        .toast.show { transform: translateY(0); opacity: 1; }
-        .toast.error { border-left-color: #EF4444; }
-        .toast.success { border-left-color: #22C55E; }
-    </style>
+.h-scroll{display:flex;gap:12px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+.h-scroll::-webkit-scrollbar{display:none}
+.trend-card{min-width:150px;background:var(--surface);border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid #F1F5F9;cursor:pointer;transition:.2s}
+.trend-card:active{transform:scale(.97)}
+.trend-img{height:90px;background:linear-gradient(135deg,var(--p-light),var(--p));display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.8rem}
+.trend-info{padding:12px}
+.trend-info h4{font-size:.8rem;font-weight:700;margin-bottom:3px}
+.trend-info p{font-size:.7rem;color:var(--text2)}
+.trend-info .price{font-size:.85rem;font-weight:800;color:var(--p);margin-top:6px}
+
+.trust{margin:20px 16px;padding:20px;background:var(--surface);border-radius:16px;display:flex;justify-content:space-around;border:1px solid #F1F5F9}
+.trust-item{text-align:center}
+.trust-item i{font-size:1.3rem;color:var(--p);margin-bottom:6px}
+.trust-item span{display:block;font-size:.65rem;font-weight:700;color:#475569}
+
+.nav{position:fixed;bottom:0;width:100%;height:68px;background:var(--surface);border-top:1px solid #F1F5F9;display:flex;justify-content:space-around;align-items:center;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{text-align:center;color:#94A3B8;font-size:.65rem;font-weight:700;width:60px;cursor:pointer;padding:6px;border-radius:12px;transition:.2s;border:none;background:none}
+.nav-item.active{color:var(--p);background:#F0FDFA}
+.nav-item i{display:block;font-size:1.2rem;margin-bottom:3px}
+
+/* Search Overlay */
+.srch{position:fixed;inset:0;background:var(--surface);z-index:99995;display:none;flex-direction:column;animation:su .3s}
+.srch.active{display:flex}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.srch-head{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid #F1F5F9}
+.srch-head input{flex:1;padding:12px 16px;border:2px solid #E2E8F0;border-radius:12px;outline:none;font-size:1rem}
+.srch-head input:focus{border-color:var(--p)}
+.srch-body{flex:1;overflow-y:auto;padding:16px}
+.srch-sec{font-size:.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;margin:20px 0 10px;letter-spacing:1px}
+.srch-chip{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#F1F5F9;border-radius:20px;font-size:.85rem;font-weight:600;color:#475569;margin:0 6px 10px 0;cursor:pointer;border:none}
+.srch-res{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #F1F5F9;cursor:pointer}
+.srch-res i{width:40px;height:40px;background:#F0FDFA;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--p);font-size:1rem}
+.srch-res div h4{font-size:.9rem;font-weight:600}.srch-res div p{font-size:.8rem;color:var(--text2)}
+
+/* Toast */
+.toast-wrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:100000;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:92%;max-width:380px}
+.toast{background:#fff;padding:14px 16px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.15);display:flex;align-items:center;gap:12px;transform:translateY(-80px);opacity:0;transition:all .4s cubic-bezier(.32,.72,0,1);pointer-events:all;border-left:4px solid var(--p)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-left-color:var(--ok)}.toast.err{border-left-color:var(--err)}.toast.warn{border-left-color:var(--warn)}
+.toast-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.toast.ok .toast-ico{background:#DCFCE7;color:var(--ok)}.toast.err .toast-ico{background:#FEE2E2;color:var(--err)}.toast.warn .toast-ico{background:#FEF3C7;color:var(--warn)}.toast.inf .toast-ico{background:#F0FDFA;color:var(--p)}
+.toast-tit{font-weight:700;color:#1E293B;font-size:.9rem}.toast-msg{color:var(--text2);font-size:.8rem}
+
+/* Bottom Sheet */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:99990;display:none;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .3s}
+.overlay.active{display:flex;opacity:1}
+.overlay.ctr{align-items:center;padding:20px}
+.sheet{background:#fff;width:100%;max-width:480px;border-radius:24px 24px 0 0;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);max-height:85vh;overflow:hidden;display:flex;flex-direction:column}
+.overlay.active .sheet{transform:translateY(0)}
+.sheet-drag{width:40px;height:4px;background:#E2E8F0;border-radius:2px;margin:12px auto}
+.shead{padding:0 20px 16px;display:flex;align-items:center;justify-content:space-between}
+.shead h3{font-size:1.1rem;font-weight:700}
+.sclose{width:32px;height:32px;border-radius:50%;background:#F1F5F9;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.sbody{padding:0 20px 20px;overflow-y:auto;flex:1}
+
+@media(min-width:480px){body{max-width:480px;margin:0 auto}.header,.nav{max-width:480px;left:50%;transform:translateX(-50%)}}
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="hero">
-            <div class="hero-icon">👷‍♂️</div>
-            <h1>Partner with Us</h1>
-            <p>Join 5000+ service professionals earning with UrbanPaintPro</p>
-        </div>
+<!-- Splash -->
+<div id="splash">
+<div class="splash-logo"><i class="fa-solid fa-paint-roller"></i></div>
+<div class="splash-title">Refine Home Painting</div>
+<div class="splash-sub">Professional Home Services</div>
+<div class="splash-loader"></div>
+</div>
 
-        <div class="stats-bar">
-            <div class="stat-item">
-                <div class="stat-number">50K+</div>
-                <div class="stat-label">Monthly Jobs</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">₹45K</div>
-                <div class="stat-label">Avg Income</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number">4.8★</div>
-                <div class="stat-label">Rating</div>
-            </div>
-        </div>
+<!-- Onboarding -->
+<div id="onb">
+<div class="onb-wrap">
+<div class="onb-slide active" data-i="0">
+<div class="onb-img i1"><i class="fa-solid fa-shield-halved"></i></div>
+<div class="onb-title">Verified Professionals</div>
+<div class="onb-desc">All partners are background verified, trained, and rated by real customers.</div>
+</div>
+<div class="onb-slide" data-i="1">
+<div class="onb-img i2"><i class="fa-solid fa-calendar-check"></i></div>
+<div class="onb-title">Easy Booking</div>
+<div class="onb-desc">Book any home service in 60 seconds. Choose time slot and relax.</div>
+</div>
+<div class="onb-slide" data-i="2">
+<div class="onb-img i3"><i class="fa-solid fa-headset"></i></div>
+<div class="onb-title">Safe and Secure</div>
+<div class="onb-desc">Track partner live, share with family, and access 24/7 SOS support.</div>
+</div>
+</div>
+<div class="onb-foot">
+<div class="onb-dots"><div class="onb-dot active" data-i="0"></div><div class="onb-dot" data-i="1"></div><div class="onb-dot" data-i="2"></div></div>
+<button class="onb-btn" id="onbBtn" onclick="nextOnb()">Next</button>
+<div class="onb-skip" onclick="skipOnb()">Skip</div>
+</div>
+</div>
 
-        <div class="auth-card">
-            <div class="auth-tabs">
-                <button class="auth-tab active" onclick="switchTab('login')">Login</button>
-                <button class="auth-tab" onclick="switchTab('register')">Register</button>
-            </div>
+<!-- City -->
+<div id="city">
+<div class="city-head">
+<h3><i class="fa-solid fa-location-dot" style="color:var(--p);margin-right:8px"></i>Select Your City</h3>
+<p>We will show services available in your area</p>
+</div>
+<div class="city-detect" onclick="detectCity()"><i class="fa-solid fa-location-crosshairs"></i><span>Detect My Location</span></div>
+<div class="city-grid">
+<div class="city-card" onclick="pickCity('Delhi')"><i class="fa-solid fa-building"></i><span>Delhi</span></div>
+<div class="city-card" onclick="pickCity('Noida')"><i class="fa-solid fa-city"></i><span>Noida</span></div>
+<div class="city-card" onclick="pickCity('Gurgaon')"><i class="fa-solid fa-building-columns"></i><span>Gurgaon</span></div>
+<div class="city-card" onclick="pickCity('Faridabad')"><i class="fa-solid fa-house-chimney"></i><span>Faridabad</span></div>
+<div class="city-card" onclick="pickCity('Ghaziabad')"><i class="fa-solid fa-warehouse"></i><span>Ghaziabad</span></div>
+<div class="city-card" onclick="pickCity('Greater Noida')"><i class="fa-solid fa-road"></i><span>Greater Noida</span></div>
+</div>
+</div>
 
-            <!-- Login Form -->
-            <div id="loginForm">
-                <div class="form-group">
-                    <label class="form-label">Phone Number</label>
-                    <div class="form-input-icon">
-                        <i class="fa-solid fa-phone"></i>
-                        <input type="tel" class="form-input" id="loginPhone" placeholder="+91 98765 43210">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <div class="form-input-icon">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" class="form-input" id="loginPass" placeholder="Enter password">
-                    </div>
-                </div>
-                <button class="btn-primary" onclick="handleLogin()">
-                    <i class="fa-solid fa-arrow-right"></i> Login as Partner
-                </button>
+<!-- Login -->
+<div id="login">
+<div class="login-top"><i class="fa-solid fa-paint-roller"></i><h2>Welcome!</h2><p>Login to book professional home services</p></div>
+<div class="login-body">
+<button class="login-btn" onclick="googleLogin()"><img src="https://cdn-icons-png.flaticon.com/512/300/300221.png">Continue with Google</button>
+<div class="login-div">OR</div>
+<div id="phone-sec">
+<div class="phone-wrap"><span class="phone-prefix">+91</span><input type="tel" class="phone-inp" id="phoneInp" placeholder="98765 43210" maxlength="10"></div>
+<div id="recaptcha"></div>
+<div id="otp-sec" style="display:none"><input type="number" class="otp-inp" id="otpInp" placeholder="Enter OTP"><button class="login-submit" onclick="verifyOTP()">Verify OTP</button></div>
+<button class="login-submit" id="sendOtpBtn" onclick="sendOTP()">Send OTP</button>
+</div>
+<p class="login-terms">By continuing, you agree to our <a href="legal.html">Terms</a> and <a href="legal.html">Privacy Policy</a></p>
+</div>
+</div>
 
-                <div class="divider">OR</div>
+<!-- Main App -->
+<div id="main">
+<div class="header">
+<div class="logo"><i class="fa-solid fa-paint-roller" style="margin-right:6px"></i>Refine</div>
+<div class="h-actions">
+<button class="h-btn" onclick="openSearch()"><i class="fa-solid fa-magnifying-glass"></i></button>
+<button class="h-btn" onclick="goTo('notifications.html')"><i class="fa-solid fa-bell"></i><span class="badge" id="notifBadge" style="display:none">0</span></button>
+<img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="h-prof" id="hProf" onclick="goTo('about.html')">
+</div>
+</div>
 
-                <button class="google-btn" onclick="handleGoogleLogin()">
-                    <img src="https://cdn-icons-png.flaticon.com/512/300/300221.png" width="20"> Continue with Google
-                </button>
-            </div>
+<div class="search-sec">
+<div class="search-bar" onclick="openSearch()"><i class="fa-solid fa-magnifying-glass"></i><span>Search services, bookings...</span><i class="fa-solid fa-microphone" style="color:var(--p)"></i></div>
+<div class="loc-pill" onclick="showCity()"><i class="fa-solid fa-location-dot"></i><span id="curCity">Delhi</span><i class="fa-solid fa-chevron-down" style="font-size:.65rem"></i></div>
+</div>
 
-            <!-- Register Form -->
-            <div id="registerForm" style="display: none;">
-                <div class="form-group">
-                    <label class="form-label">Full Name</label>
-                    <input type="text" class="form-input" id="regName" placeholder="Your full name">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Phone Number</label>
-                    <input type="tel" class="form-input" id="regPhone" placeholder="+91 98765 43210">
-                </div>
-                
-                <label class="form-label">Select Your Category</label>
-                <div class="category-grid">
-                    <div class="category-item" onclick="selectCategory(this, 'painting')">
-                        <i class="fa-solid fa-paint-roller"></i>
-                        <span>Painting</span>
-                    </div>
-                    <div class="category-item" onclick="selectCategory(this, 'waterproofing')">
-                        <i class="fa-solid fa-cloud-showers-heavy"></i>
-                        <span>Waterproofing</span>
-                    </div>
-                    <div class="category-item" onclick="selectCategory(this, 'electrician')">
-                        <i class="fa-solid fa-bolt"></i>
-                        <span>Electrician</span>
-                    </div>
-                    <div class="category-item" onclick="selectCategory(this, 'plumber')">
-                        <i class="fa-solid fa-faucet-drip"></i>
-                        <span>Plumber</span>
-                    </div>
-                    <div class="category-item" onclick="selectCategory(this, 'carpenter')">
-                        <i class="fa-solid fa-hammer"></i>
-                        <span>Carpenter</span>
-                    </div>
-                    <div class="category-item" onclick="selectCategory(this, 'ac')">
-                        <i class="fa-solid fa-snowflake"></i>
-                        <span>AC Repair</span>
-                    </div>
-                    <div class="category-item" onclick="selectCategory(this, 'cleaning')">
-                        <i class="fa-solid fa-broom"></i>
-                        <span>Cleaning</span>
-                    </div>
-                    <div class="category-item" onclick="selectCategory(this, 'pest')">
-                        <i class="fa-solid fa-bug"></i>
-                        <span>Pest Control</span>
-                    </div>
-                </div>
+<div class="hero">
+<h2>Flat 20% OFF</h2>
+<p>On your first home painting service</p>
+<button class="hero-btn" onclick="goToSrv('painting')">Book Now</button>
+</div>
 
-                <div class="form-group">
-                    <label class="form-label">Experience (Years)</label>
-                    <input type="number" class="form-input" id="regExp" placeholder="e.g. 5">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">City</label>
-                    <input type="text" class="form-input" id="regCity" placeholder="e.g. Delhi, Noida">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-input" id="regPass" placeholder="Create password">
-                </div>
+<div class="sec-head"><h3>All Services</h3><a href="services.html">View All</a></div>
+<div class="srv-grid">
+<div class="srv-card" onclick="goToSrv('painting')"><div class="srv-icon" style="background:#F0FDFA;color:var(--p)"><i class="fa-solid fa-paint-roller"></i></div><div class="srv-name">Painting</div></div>
+<div class="srv-card" onclick="goToSrv('waterproofing')"><div class="srv-icon" style="background:#CFFAFE;color:#0891B2"><i class="fa-solid fa-cloud-showers-heavy"></i></div><div class="srv-name">Waterproofing</div></div>
+<div class="srv-card" onclick="goToSrv('cleaning')"><div class="srv-icon" style="background:#DCFCE7;color:#16A34A"><i class="fa-solid fa-broom"></i></div><div class="srv-name">Cleaning</div></div>
+<div class="srv-card" onclick="goToSrv('ac')"><div class="srv-icon" style="background:#DBEAFE;color:#2563EB"><i class="fa-solid fa-snowflake"></i></div><div class="srv-name">AC Repair</div></div>
+<div class="srv-card" onclick="goToSrv('electrician')"><div class="srv-icon" style="background:#FEF9C3;color:#CA8A04"><i class="fa-solid fa-bolt"></i></div><div class="srv-name">Electrician</div></div>
+<div class="srv-card" onclick="goToSrv('plumber')"><div class="srv-icon" style="background:#E0E7FF;color:#4F46E5"><i class="fa-solid fa-faucet-drip"></i></div><div class="srv-name">Plumber</div></div>
+<div class="srv-card" onclick="goToSrv('carpenter')"><div class="srv-icon" style="background:#FEF3C7;color:#D97706"><i class="fa-solid fa-hammer"></i></div><div class="srv-name">Carpenter</div></div>
+<div class="srv-card" onclick="goToSrv('pest')"><div class="srv-icon" style="background:#FEE2E2;color:#DC2626"><i class="fa-solid fa-bug"></i></div><div class="srv-name">Pest Control</div></div>
+</div>
 
-                <button class="btn-primary" onclick="handleRegister()">
-                    <i class="fa-solid fa-user-plus"></i> Register as Partner
-                </button>
-            </div>
-        </div>
+<div class="sec-head"><h3>Offers For You</h3></div>
+<div class="promo-scroll">
+<div class="promo-card p1"><h4>First Booking Offer</h4><p>Get 20% off on your first service</p><button onclick="goToSrv('painting')">Book Now</button></div>
+<div class="promo-card p2"><h4>Refer and Earn</h4><p>Invite friends and earn Rs 100 each</p><button onclick="goTo('about.html')">Invite</button></div>
+<div class="promo-card p3"><h4>Monsoon Special</h4><p>Waterproofing at 15% off</p><button onclick="goToSrv('waterproofing')">Claim</button></div>
+</div>
 
-        <div class="features">
-            <div class="feature-item">
-                <div class="feature-icon"><i class="fa-solid fa-wallet"></i></div>
-                <div class="feature-text">
-                    <h4>Weekly Payments</h4>
-                    <p>Direct to your bank account</p>
-                </div>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon"><i class="fa-solid fa-map-location-dot"></i></div>
-                <div class="feature-text">
-                    <h4>Nearby Jobs</h4>
-                    <p>Work in your preferred area</p>
-                </div>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon"><i class="fa-solid fa-headset"></i></div>
-                <div class="feature-text">
-                    <h4>24/7 Support</h4>
-                    <p>We're always here to help</p>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="sec-head"><h3>Trending Now</h3><a href="services.html">See All</a></div>
+<div class="h-scroll">
+<div class="trend-card" onclick="goToSrv('painting')"><div class="trend-img"><i class="fa-solid fa-paint-roller"></i></div><div class="trend-info"><h4>Home Painting</h4><p>Full makeover</p><div class="price">From Rs 1,999</div></div></div>
+<div class="trend-card" onclick="goToSrv('cleaning')"><div class="trend-img" style="background:linear-gradient(135deg,#16A34A,#22C55E)"><i class="fa-solid fa-broom"></i></div><div class="trend-info"><h4>Deep Cleaning</h4><p>1BHK full clean</p><div class="price">From Rs 1,499</div></div></div>
+<div class="trend-card" onclick="goToSrv('ac')"><div class="trend-img" style="background:linear-gradient(135deg,#2563EB,#3B82F6)"><i class="fa-solid fa-snowflake"></i></div><div class="trend-info"><h4>AC Service</h4><p>Split AC service</p><div class="price">From Rs 499</div></div></div>
+<div class="trend-card" onclick="goToSrv('waterproofing')"><div class="trend-img" style="background:linear-gradient(135deg,#0891B2,#06B6D4)"><i class="fa-solid fa-cloud-showers-heavy"></i></div><div class="trend-info"><h4>Waterproofing</h4><p>Terrace protection</p><div class="price">From Rs 2,999</div></div></div>
+</div>
 
-    <div class="toast-container" id="toastContainer"></div>
+<div class="sec-head" id="againHead" style="display:none"><h3>Book Again</h3></div>
+<div class="h-scroll" id="againBox" style="display:none"></div>
 
-    <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyCmqBL6a0muExq2qBsSR6M3C_8AyXcJ2k8",
-            authDomain: "urban-paint-pro.firebaseapp.com",
-            databaseURL: "https://urban-paint-pro-default-rtdb.asia-southeast1.firebasedatabase.app/",
-            projectId: "urban-paint-pro",
-            storageBucket: "urban-paint-pro.firebasestorage.app",
-            messagingSenderId: "929763117480",
-            appId: "1:929763117480:web:560057baeb12672078b59d"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
+<div class="trust">
+<div class="trust-item"><i class="fa-solid fa-shield-halved"></i><span>Verified<br>Partners</span></div>
+<div class="trust-item"><i class="fa-solid fa-clock"></i><span>On-Time<br>Service</span></div>
+<div class="trust-item"><i class="fa-solid fa-tag"></i><span>Best<br>Price</span></div>
+<div class="trust-item"><i class="fa-solid fa-rotate-left"></i><span>30-Day<br>Warranty</span></div>
+</div>
 
-        let selectedCategory = '';
+<div class="nav">
+<button class="nav-item active" onclick="goTo('index.html')"><i class="fa-solid fa-house"></i>Home</button>
+<button class="nav-item" onclick="goTo('services.html')"><i class="fa-solid fa-paint-roller"></i>Services</button>
+<button class="nav-item" onclick="goTo('bookings.html')"><i class="fa-solid fa-box-open"></i>Bookings</button>
+<button class="nav-item" onclick="goTo('about.html')"><i class="fa-solid fa-user"></i>Profile</button>
+</div>
+</div>
 
-        function switchTab(tab) {
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            if(tab === 'login') {
-                document.getElementById('loginForm').style.display = 'block';
-                document.getElementById('registerForm').style.display = 'none';
-            } else {
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('registerForm').style.display = 'block';
-            }
-        }
+<!-- Search Overlay -->
+<div class="srch" id="srch">
+<div class="srch-head">
+<i class="fa-solid fa-arrow-left" style="font-size:1.1rem;color:var(--text);cursor:pointer" onclick="closeSearch()"></i>
+<input type="text" id="srchInp" placeholder="Search services..." oninput="doSearch(this.value)">
+<i class="fa-solid fa-xmark" style="color:var(--text2);cursor:pointer" onclick="document.getElementById('srchInp').value='';doSearch('')"></i>
+</div>
+<div class="srch-body">
+<div id="srchDef">
+<div class="srch-sec">Recent Searches</div>
+<div id="recentBox"></div>
+<div class="srch-sec">Popular Services</div>
+<div class="srch-res" onclick="goToSrv('painting');closeSearch()"><i class="fa-solid fa-paint-roller"></i><div><h4>Home Painting</h4><p>Interior and Exterior</p></div></div>
+<div class="srch-res" onclick="goToSrv('cleaning');closeSearch()"><i class="fa-solid fa-broom"></i><div><h4>Deep Cleaning</h4><p>Home and Office</p></div></div>
+<div class="srch-res" onclick="goToSrv('ac');closeSearch()"><i class="fa-solid fa-snowflake"></i><div><h4>AC Service</h4><p>Repair and Installation</p></div></div>
+<div class="srch-res" onclick="goToSrv('waterproofing');closeSearch()"><i class="fa-solid fa-cloud-showers-heavy"></i><div><h4>Waterproofing</h4><p>Terrace and Bathroom</p></div></div>
+</div>
+<div id="srchRes" style="display:none"></div>
+</div>
+</div>
 
-        function selectCategory(el, category) {
-            document.querySelectorAll('.category-item').forEach(item => item.classList.remove('selected'));
-            el.classList.add('selected');
-            selectedCategory = category;
-        }
+<!-- Toast -->
+<div class="toast-wrap" id="toastWrap"></div>
 
-        function handleLogin() {
-            const phone = document.getElementById('loginPhone').value;
-            const pass = document.getElementById('loginPass').value;
-            
-            if(!phone || !pass) {
-                showToast('Please fill all fields', 'error');
-                return;
-            }
+<script>
+const firebaseConfig={apiKey:"AIzaSyCmqBL6a0muExq2qBsSR6M3C_8AyXcJ2k8",authDomain:"urban-paint-pro.firebaseapp.com",databaseURL:"https://urban-paint-pro-default-rtdb.asia-southeast1.firebasedatabase.app/",projectId:"urban-paint-pro",storageBucket:"urban-paint-pro.firebasestorage.app",messagingSenderId:"929763117480",appId:"1:929763117480:web:560057baeb12672078b59d"};
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(),db=firebase.database();
+const gProvider=new firebase.auth.GoogleAuthProvider();
+let currentUser=null,onbIdx=0,confResult=null;
 
-            // Check partner in database
-            db.ref('partners').orderByChild('phone').equalTo(phone).once('value')
-                .then(snapshot => {
-                    if(snapshot.exists()) {
-                        const partner = Object.values(snapshot.val())[0];
-                        if(partner.password === pass) {
-                            localStorage.setItem('partnerData', JSON.stringify(partner));
-                            showToast('Login successful!', 'success');
-                            setTimeout(() => window.location.href = 'partner-dashboard.html', 1000);
-                        } else {
-                            showToast('Invalid password', 'error');
-                        }
-                    } else {
-                        showToast('Partner not found', 'error');
-                    }
-                });
-        }
+// Flow
+document.addEventListener('DOMContentLoaded',()=>{
+const doneOnb=localStorage.getItem('onbDone');
+setTimeout(()=>{
+document.getElementById('splash').classList.add('hide');
+auth.onAuthStateChanged(user=>{
+if(user){currentUser=user;const city=localStorage.getItem('userCity');if(!city)show('city');else showMain(user);}
+else{if(!doneOnb)show('onb');else show('login');}
+});
+},2500);
+loadRecent();
+});
 
-        function handleGoogleLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-                .then(result => {
-                    const user = result.user;
-                    checkPartnerExists(user);
-                })
-                .catch(err => showToast(err.message, 'error'));
-        }
+function show(id){['onb','login','city','main'].forEach(x=>{const el=document.getElementById(x);if(el)el.classList.remove('active');});const t=document.getElementById(id);if(t){if(id==='main')t.style.display='block';else t.classList.add('active');}}
 
-        function checkPartnerExists(user) {
-            db.ref('partners').orderByChild('email').equalTo(user.email).once('value')
-                .then(snapshot => {
-                    if(snapshot.exists()) {
-                        const partner = Object.values(snapshot.val())[0];
-                        localStorage.setItem('partnerData', JSON.stringify(partner));
-                        window.location.href = 'partner-dashboard.html';
-                    } else {
-                        showToast('Please register first', 'error');
-                    }
-                });
-        }
+// Onboarding
+function nextOnb(){const slides=document.querySelectorAll('.onb-slide'),dots=document.querySelectorAll('.onb-dot');slides[onbIdx].classList.remove('active');dots[onbIdx].classList.remove('active');onbIdx++;if(onbIdx>=slides.length){localStorage.setItem('onbDone','true');show('login');return;}slides[onbIdx].classList.add('active');dots[onbIdx].classList.add('active');document.getElementById('onbBtn').textContent=onbIdx===slides.length-1?'Get Started':'Next';}
+function skipOnb(){localStorage.setItem('onbDone','true');show('login');}
 
-        function handleRegister() {
-            const name = document.getElementById('regName').value;
-            const phone = document.getElementById('regPhone').value;
-            const exp = document.getElementById('regExp').value;
-            const city = document.getElementById('regCity').value;
-            const pass = document.getElementById('regPass').value;
+// City
+function pickCity(city){localStorage.setItem('userCity',city);document.getElementById('curCity').textContent=city;auth.onAuthStateChanged(u=>{if(u)showMain(u);else show('login');});}
+function detectCity(){if(!navigator.geolocation){toast('Geolocation not supported','err');return;}toast('Detecting location...','inf');navigator.geolocation.getCurrentPosition(()=>{pickCity('Delhi');toast('Location detected: Delhi','ok');},()=>toast('Location access denied','err'));}
+function showCity(){show('city');}
 
-            if(!name || !phone || !selectedCategory || !exp || !city || !pass) {
-                showToast('Please fill all fields', 'error');
-                return;
-            }
+// Auth
+function googleLogin(){auth.signInWithPopup(gProvider).then(()=>toast('Welcome! Login successful','ok')).catch(e=>toast(e.message,'err'));}
+function sendOTP(){const p=document.getElementById('phoneInp').value;if(!p||p.length<10){toast('Enter valid 10-digit number','warn');return;}if(!window.recaptchaVerifier)window.recaptchaVerifier=new firebase.auth.RecaptchaVerifier('recaptcha',{size:'invisible'});auth.signInWithPhoneNumber('+91'+p,window.recaptchaVerifier).then(r=>{confResult=r;document.getElementById('otp-sec').style.display='block';document.getElementById('sendOtpBtn').style.display='none';toast('OTP sent to +91 '+p,'ok');}).catch(e=>toast(e.message,'err'));}
+function verifyOTP(){const c=document.getElementById('otpInp').value;confResult.confirm(c).then(()=>toast('Login successful','ok')).catch(()=>toast('Invalid OTP','err'));}
 
-            const partnerData = {
-                name,
-                phone,
-                category: selectedCategory,
-                experience: parseInt(exp),
-                city: city.toLowerCase(),
-                password: pass,
-                rating: 0,
-                jobsCompleted: 0,
-                earnings: 0,
-                status: 'pending',
-                createdAt: firebase.database.ServerValue.TIMESTAMP
-            };
+// Main
+function showMain(user){show('main');db.ref('users/'+user.uid+'/profile').on('value',s=>{const d=s.val()||{};const photo=d.photoURL||user.photoURL||'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';document.getElementById('hProf').src=photo;});saveUser(user);loadAgain(user.uid);loadNotifCount(user.uid);}
+function saveUser(user){db.ref('users/'+user.uid+'/profile').update({name:user.displayName||'User',email:user.email||'',phone:user.phoneNumber||'',photoURL:user.photoURL||'',lastLogin:firebase.database.ServerValue.TIMESTAMP,device:/Mobi/i.test(navigator.userAgent)?'Mobile':'Desktop'});}
 
-            const partnerId = db.ref('partners').push().key;
-            db.ref('partners/' + partnerId).set(partnerData)
-                .then(() => {
-                    showToast('Registration successful! Please login.', 'success');
-                    switchTab('login');
-                })
-                .catch(err => showToast(err.message, 'error'));
-        }
+// Search
+function openSearch(){document.getElementById('srch').classList.add('active');setTimeout(()=>document.getElementById('srchInp').focus(),300);}
+function closeSearch(){document.getElementById('srch').classList.remove('active');}
+function doSearch(q){const def=document.getElementById('srchDef'),res=document.getElementById('srchRes');if(!q.trim()){def.style.display='block';res.style.display='none';return;}def.style.display='none';res.style.display='block';const services=[{n:'Home Painting',c:'painting',i:'fa-paint-roller',d:'Interior and Exterior'},{n:'Waterproofing',c:'waterproofing',i:'fa-cloud-showers-heavy',d:'Terrace and Walls'},{n:'Deep Cleaning',c:'cleaning',i:'fa-broom',d:'Home and Office'},{n:'AC Service',c:'ac',i:'fa-snowflake',d:'Repair and Install'},{n:'Electrician',c:'electrician',i:'fa-bolt',d:'Wiring and Fittings'},{n:'Plumber',c:'plumber',i:'fa-faucet-drip',d:'Pipes and Taps'},{n:'Carpenter',c:'carpenter',i:'fa-hammer',d:'Furniture and Doors'},{n:'Pest Control',c:'pest',i:'fa-bug',d:'Cockroach and Termite'}];const f=services.filter(s=>s.n.toLowerCase().includes(q.toLowerCase()));if(f.length===0){res.innerHTML='<div style="text-align:center;padding:40px;color:#94A3B8"><i class="fa-solid fa-search" style="font-size:2rem;margin-bottom:10px"></i><p>No results found</p></div>';return;}res.innerHTML=f.map(s=>`<div class="srch-res" onclick="goToSrv('${s.c}');closeSearch();saveRecent('${s.n}')"><i class="fa-solid ${s.i}"></i><div><h4>${s.n}</h4><p>${s.d}</p></div></div>`).join('');}
+function saveRecent(t){let r=JSON.parse(localStorage.getItem('recent')||'[]');r=r.filter(x=>x!==t);r.unshift(t);if(r.length>5)r.pop();localStorage.setItem('recent',JSON.stringify(r));loadRecent();}
+function loadRecent(){const r=JSON.parse(localStorage.getItem('recent')||'[]');const b=document.getElementById('recentBox');if(r.length===0){b.innerHTML='<span style="color:#94A3B8;font-size:.85rem">No recent searches</span>';return;}b.innerHTML=r.map(x=>`<button class="srch-chip" onclick="document.getElementById('srchInp').value='${x}';doSearch('${x}')"><i class="fa-solid fa-clock-rotate-left" style="font-size:.7rem"></i>${x}</button>`).join('');}
 
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <i class="fa-solid ${type === 'error' ? 'fa-circle-xmark' : type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}" 
-                   style="color: ${type === 'error' ? '#EF4444' : type === 'success' ? '#22C55E' : '#0D9488'}; font-size: 1.2rem;"></i>
-                <div style="flex: 1; font-weight: 600;">${message}</div>
-            `;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => toast.remove(), 4000);
-        }
-    </script>
+// Book Again
+function loadAgain(uid){db.ref('users/'+uid+'/orders').limitToLast(3).once('value').then(s=>{const d=s.val();if(!d)return;const arr=Object.entries(d).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));if(arr.length===0)return;document.getElementById('againHead').style.display='flex';document.getElementById('againBox').style.display='flex';document.getElementById('againBox').innerHTML=arr.map(([k,o])=>`<div class="trend-card" onclick="rebook('${k}')"><div class="trend-img" style="background:linear-gradient(135deg,var(--p-light),var(--p))"><i class="fa-solid fa-rotate-left"></i></div><div class="trend-info"><h4>${o.service||'Service'}</h4><p>${o.slot?.date||'Recent'}</p><div class="price">Rs ${(o.total||0).toLocaleString()}</div></div></div>`).join('');});}
+function rebook(id){toast('Redirecting to service...','inf');setTimeout(()=>window.location.href='services.html',800);}
+
+// Notifications
+function loadNotifCount(uid){db.ref('users/'+uid+'/notifications').orderByChild('read').equalTo(false).on('value',s=>{const c=s.numChildren();const b=document.getElementById('notifBadge');if(c>0){b.style.display='flex';b.textContent=c>99?'99+':c;}else{b.style.display='none';}});}
+
+// Toast
+function toast(msg,type='inf',title=''){const w=document.getElementById('toastWrap');const t=document.createElement('div');t.className='toast '+type;const icons={ok:'fa-circle-check',err:'fa-circle-xmark',warn:'fa-triangle-exclamation',inf:'fa-circle-info'};const titles={ok:'Success!',err:'Error!',warn:'Warning!',inf:'Information'};t.innerHTML=`<div class="toast-ico"><i class="fa-solid ${icons[type]}"></i></div><div><div class="toast-tit">${title||titles[type]}</div><div class="toast-msg">${msg}</div></div>`;w.appendChild(t);setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),400);},4000);}
+
+// Navigation
+function goTo(url){window.location.href=url;}
+function goToSrv(cat){window.location.href='services.html?category='+cat;}
+</script>
 </body>
 </html>
