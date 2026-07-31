@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Painter Khata Book - VIP Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --primary: #2563eb; --primary-dark: #1d4ed8; 
+            --secondary: #10b981; --secondary-light: #d1fae5;
+            --danger: #ef4444; --danger-light: #fee2e2;
+            --warning: #f59e0b; --warning-light: #fef3c7;
+            --dark: #0f172a; --text-muted: #64748b;
+            --bg-color: #f8fafc; --surface: #ffffff;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 15px rgba(0,0,0,0.04);
+            --shadow-lg: 0 10px 25px rgba(37, 99, 235, 0.15);
+        }
+        body { background: var(--bg-color); color: var(--dark); min-height: 100vh; padding-bottom: 90px;}
+        
+        /* Premium Gradient Navbar */
+        .navbar { background: linear-gradient(135deg, #1e3a8a, #3b82f6); padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; margin-bottom: 10px;}
+        .navbar h1 { font-size: 1.25rem; color: #fff; display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: 0.5px;}
+        .btn-sync { background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 12px; border-radius: 10px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.2s;}
+        .btn-sync:active { transform: scale(0.95); background: rgba(255,255,255,0.3); }
+        
+        /* Modern Summary Dashboard */
+        .summary-container { padding: 10px 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .summary-box { background: var(--surface); padding: 15px; border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color); position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 5px;}
+        .summary-box::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+        .summary-box.kamai::before { background: var(--secondary); }
+        .summary-box.kharcha::before { background: var(--danger); }
+        .summary-box.balance { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #ffffff, #f8fafc);}
+        .summary-box.balance::before { background: var(--warning); width: 100%; height: 4px; }
+        
+        .box-title { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;}
+        .box-value { font-size: 1.25rem; font-weight: 800; color: var(--dark); }
+        .kamai .box-value { color: var(--secondary); }
+        .kharcha .box-value { color: var(--danger); }
+        .balance .box-value { font-size: 1.6rem; color: var(--warning); }
+        .balance-icon { width: 48px; height: 48px; background: var(--warning-light); color: #d97706; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;}
+
+        /* Main Content Header */
+        .main-content { padding: 10px 15px; }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin: 15px 0 10px 0; }
+        .toolbar h2 { font-size: 1.15rem; font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 8px;}
+        
+        /* App-like Action Buttons */
+        .btn { padding: 14px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1rem; transition: 0.2s; letter-spacing: 0.3px;}
+        .btn-primary { background: var(--primary); color: white; width: 100%; box-shadow: var(--shadow-lg);}
+        .btn-primary:active { transform: translateY(2px); box-shadow: none;}
+        .btn-outline { background: var(--surface); border: 1.5px solid var(--primary); color: var(--primary); width: 100%; margin-top: 10px;}
+        .btn-outline:active { background: #eff6ff; }
+        .btn-danger { background: var(--danger-light); color: var(--danger); padding: 8px 12px; border-radius: 8px; border: none; font-size: 0.85rem;}
+        
+        /* Premium Card View Table */
+        .painter-card { background: var(--surface); margin-bottom: 15px; border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color); overflow: hidden; transition: 0.3s; }
+        
+        /* Card Header (Name & Actions) */
+        .pc-header { background: #f8fafc; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
+        .pc-name { font-size: 1.1rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px;}
+        .pc-actions { display: flex; gap: 8px; }
+        .icon-btn { width: 35px; height: 35px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; cursor: pointer; transition: 0.2s;}
+        .icon-btn.edit { background: #e0f2fe; color: #0284c7; }
+        .icon-btn.delete { background: var(--danger-light); color: var(--danger); }
+        .icon-btn:active { transform: scale(0.9); }
+        
+        /* Card Body (Stats) */
+        .pc-body { padding: 15px; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 4px;}
+        .stat-val { font-size: 1.05rem; font-weight: 700; color: var(--dark); }
+        .stat-val.kamai { color: var(--secondary); }
+        .stat-val.kharcha { color: var(--danger); }
+        .stat-val.balance { font-size: 1.2rem; }
+        
+        /* Floating Action Button (FAB) */
+        .fab { position: fixed; bottom: 25px; right: 25px; width: 65px; height: 65px; border-radius: 20px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4); border: none; z-index: 90; cursor: pointer; transition: 0.3s;}
+        .fab:active { transform: scale(0.9) rotate(15deg); }
+        
+        /* Modals (Popups) - Smooth Bottom Sheet */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); display: none; align-items: flex-end; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
+        .modal { background: var(--surface); width: 100%; max-width: 500px; border-radius: 24px 24px 0 0; box-shadow: 0 -15px 40px rgba(0,0,0,0.2); max-height: 90vh; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); position: relative;}
+        
+        /* Drag Handle UI */
+        .modal::before { content: ''; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 40px; height: 5px; background: #cbd5e1; border-radius: 10px;}
+        
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .modal-header { padding: 25px 20px 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: var(--surface); z-index: 10; border-radius: 24px 24px 0 0;}
+        .modal-header h2 { font-size: 1.25rem; font-weight: 800; color: var(--dark); display: flex; align-items: center; gap: 10px;}
+        .close-btn { background: #f1f5f9; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); transition: 0.2s;}
+        .close-btn:active { background: #e2e8f0; }
+        
+        .modal-body { padding: 20px; overflow-y: auto; }
+        
+        /* Premium Forms */
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; color: #334155; }
+        .form-control { width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1.05rem; outline: none; background: #f8fafc; transition: 0.3s; color: var(--dark); font-weight: 500; -webkit-appearance: none;}
+        .form-control:focus { border-color: var(--primary); background: var(--surface); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);}
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        .ledger-add-box { background: #eff6ff; padding: 20px; border-radius: 16px; border: 1px dashed #bfdbfe; margin-bottom: 25px;}
+        
+        /* Ledger History Table */
+        .history-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px;}
+        .history-item { background: var(--surface); border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow-sm);}
+        .h-date { font-weight: 700; font-size: 0.95rem; color: var(--dark); margin-bottom: 4px;}
+        .h-info { font-size: 0.8rem; color: var(--text-muted); font-weight: 500;}
+        .h-amount { font-weight: 800; font-size: 1.1rem; text-align: right;}
+        .h-delete { background: none; border: none; color: #ef4444; font-size: 1.1rem; padding: 5px; cursor: pointer; opacity: 0.8;}
+        
+        /* PIN Modal Specifics */
+        .pin-box { text-align: center; padding: 20px 0; }
+        .pin-input { font-size: 2rem; letter-spacing: 15px; text-align: center; border-radius: 16px; padding: 15px; border: 2px solid var(--border-color); background: #f8fafc; font-weight: 800; color: var(--primary);}
+        .pin-input:focus { border-color: var(--primary); }
+
+        .empty-state { text-align: center; padding: 60px 20px; }
+        .empty-state img { width: 120px; opacity: 0.6; margin-bottom: 15px; filter: grayscale(100%);}
+        .empty-state h3 { font-size: 1.2rem; color: #64748b; font-weight: 600;}
+        .empty-state p { font-size: 0.9rem; color: #94a3b8; margin-top: 5px;}
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="navbar">
+        <h1><i class="fas fa-paint-roller"></i>AK Painting contractors</h1>
+        <button class="btn-sync" onclick="alert('Ready to sync with Cloud!')">
+            <i class="fas fa-cloud-upload-alt"></i> Sync
+        </button>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="summary-container">
+        <div class="summary-box">
+            <span class="box-title">All Labour Jhadi </span>
+            <span class="box-value" id="sumJhadiCount">0</span>
+        </div>
+        <div class="summary-box kamai">
+            <span class="box-title">Total Labour</span>
+            <span class="box-value" id="sumKamai">₹0</span>
+        </div>
+        <div class="summary-box kharcha">
+            <span class="box-title">Kharca</span>
+            <span class="box-value" id="sumKharcha">₹0</span>
+        </div>
+        <div class="summary-box balance">
+            <div>
+                <span class="box-title">All Labour ko dene hai</span>
+                <div class="box-value" id="sumBalance">₹0</div>
+            </div>
+            <div class="balance-icon"><i class="fas fa-wallet"></i></div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="toolbar">
+            <h2><i class="fas fa-users"></i> All Labour Details</h2>
+        </div>
+        
+        <div id="painterListContainer">
+            <!-- Cards Injected via JS -->
+        </div>
+    </div>
+
+    <!-- Floating Add Button -->
+    <button class="fab" onclick="openAddModal()"><i class="fas fa-plus"></i></button>
+
+    <!-- MODAL 1: Add/Edit Painter -->
+    <div class="modal-overlay" id="painterModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="painterModalTitle"><i class="fas fa-user-plus"></i> Add Labour</h2>
+                <button class="close-btn" onclick="closeModal('painterModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="painterForm">
+                    <input type="hidden" id="edit_p_id">
+                    <div class="form-group">
+                        <label>Labour Details </label>
+                        <input type="text" id="p_name" class="form-control" placeholder="Ex: King" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>Jhadi Rate (₹ / Day)</label>
+                        <input type="number" id="p_rate" class="form-control" placeholder="Ex: 580" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 15px;">
+                        <i class="fas fa-check"></i> Save Details
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Open Ledger (Khata) -->
+    <div class="modal-overlay" id="ledgerModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="ledgerPainterName">Khata</h2>
+                <button class="close-btn" onclick="closeModal('ledgerModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="padding-bottom: 40px;">
+                
+                <!-- Quick Entry Form -->
+                <div class="ledger-add-box">
+                    <h3 style="font-size: 1rem; margin-bottom: 15px; color: var(--primary); font-weight: 800;">Nayi Hazri Darj Karein</h3>
+                    <form id="dailyEntryForm">
+                        <input type="hidden" id="activePainterId">
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="d_date" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Jhadi Lagai</label>
+                                <select id="d_jhadi" class="form-control">
+                                    <option value="1">1 Jhadi (Full)</option>
+                                    <option value="1.5">1.5 Jhadi (Dedh)</option>
+                                    <option value="0.5">0.5 Jhadi (Half)</option>
+                                    <option value="2">2 Jhadi (Double)</option>
+                                    <option value="0">0 Jhadi (Absent)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Kharcha (₹)</label>
+                            <input type="number" id="d_kharcha" class="form-control" placeholder="Khaton mein katega" value="0" min="0">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Add Hissab
+                        </button>
+                    </form>
+                </div>
+
+                <!-- History -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+                    <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--dark);">Pichla Record</h3>
+                    <span id="ledgerSummary" style="font-weight: 800; font-size: 1.1rem;"></span>
+                </div>
+                
+                <div class="history-list" id="historyListContainer">
+                    <!-- Data injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: PIN Lock (Security) -->
+    <div class="modal-overlay" id="pinModal">
+        <div class="modal" style="border-radius: 24px; max-width: 400px; margin: auto;">
+            <div class="modal-header" style="justify-content: center; border-bottom: none;">
+                <h2 style="color: var(--danger);"><i class="fas fa-lock"></i> Security Lock</h2>
+            </div>
+            <div class="modal-body pin-box">
+                <p style="color: var(--text-muted); font-weight: 500; margin-bottom: 20px;">King</p>
+                <input type="password" id="pinInput" class="form-control pin-input" maxlength="4" pattern="\d*" inputmode="numeric" placeholder="••••">
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button class="btn btn-outline" style="margin-top:0;" onclick="closeModal('pinModal'); pendingAction = null;">Cancel</button>
+                    <button class="btn btn-primary" onclick="verifyPin()">Verify</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MASTER PIN (You can change it here)
+        const MASTER_PIN = "6471";
+
+        let painters = JSON.parse(localStorage.getItem('refinoVIP_DB')) || [];
+        let pendingAction = null; // Store function to execute after PIN verification
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderApp();
+            document.getElementById('d_date').valueAsDate = new Date();
+        });
+
+        function saveData() {
+            localStorage.setItem('refinoVIP_DB', JSON.stringify(painters));
+            renderApp();
+        }
+
+        // --- Modals Logic ---
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            document.body.style.overflow = 'hidden'; 
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // --- PIN Security Logic ---
+        function requirePin(actionCallback) {
+            pendingAction = actionCallback;
+            document.getElementById('pinInput').value = '';
+            openModal('pinModal');
+            setTimeout(() => document.getElementById('pinInput').focus(), 100);
+        }
+
+        function verifyPin() {
+            const input = document.getElementById('pinInput').value;
+            if(input === MASTER_PIN) {
+                closeModal('pinModal');
+                if(pendingAction) pendingAction(); // Execute the locked action
+                pendingAction = null;
+            } else {
+                alert("Galat PIN! Kripya sahi PIN daalein.");
+                document.getElementById('pinInput').value = '';
+            }
+        }
+
+        // --- Add / Edit Painter ---
+        function openAddModal() {
+            document.getElementById('painterForm').reset();
+            document.getElementById('edit_p_id').value = '';
+            document.getElementById('painterModalTitle').innerHTML = '<i class="fas fa-user-plus"></i> Labour Detail';
+            openModal('painterModal');
+        }
+
+        function triggerEditPainter(id) {
+            requirePin(() => {
+                const p = painters.find(x => x.id === id);
+                if(!p) return;
+                document.getElementById('edit_p_id').value = p.id;
+                document.getElementById('p_name').value = p.name;
+                document.getElementById('p_rate').value = p.defaultRate;
+                document.getElementById('painterModalTitle').innerHTML = '<i class="fas fa-user-edit"></i> Edit Painter';
+                openModal('painterModal');
+            });
+        }
+
+        function triggerDeletePainter(id) {
+            requirePin(() => {
+                if(confirm("Kiya aap sach me is Painter aur uska Pura Hissab delete karna chahte hain?")) {
+                    painters = painters.filter(x => x.id !== id);
+                    saveData();
+                }
+            });
+        }
+
+        document.getElementById('painterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit_p_id').value;
+            const name = document.getElementById('p_name').value.trim();
+            const rate = parseFloat(document.getElementById('p_rate').value);
+            
+            if(!name || isNaN(rate)) return;
+
+            if(id) {
+                // Update existing
+                const idx = painters.findIndex(x => x.id === id);
+                if(idx > -1) {
+                    painters[idx].name = name;
+                    painters[idx].defaultRate = rate;
+                    // Note: Changing rate here won't affect past calculated records (which is standard accounting practice)
+                }
+            } else {
+                // Add New
+                painters.push({ id: 'P_' + Date.now(), name, defaultRate: rate, records: [] });
+            }
+            
+            saveData();
+            closeModal('painterModal');
+        });
+
+        // --- Render Main Screen ---
+        function renderApp() {
+            const container = document.getElementById('painterListContainer');
+            let globJhadiCount = 0, globKamai = 0, globKharcha = 0;
+
+            if (painters.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-box-open" style="font-size: 4rem; color: #cbd5e1; margin-bottom:15px;"></i>
+                        <h3>Khata Khali Hai</h3>
+                        <p>Niche (+) button dabakar painter jodein.</p>
+                    </div>`;
+                updateDashboard(0,0,0);
+                return;
+            }
+
+            let html = '';
+            painters.forEach(p => {
+                let tJhadi = 0, tKamai = 0, tKharcha = 0;
+                p.records.forEach(r => { tJhadi += r.jhadi; tKamai += r.jhadiValue; tKharcha += r.kharcha; });
+                let bal = tKamai - tKharcha;
+                
+                globJhadiCount += tJhadi; globKamai += tKamai; globKharcha += tKharcha;
+
+                html += `
+                    <div class="painter-card">
+                        <div class="pc-header">
+                            <div class="pc-name"><i class="fas fa-user-circle" style="font-size:1.3rem;"></i> ${p.name}</div>
+                            <div class="pc-actions">
+                                <button class="icon-btn edit" onclick="triggerEditPainter('${p.id}')"><i class="fas fa-pen"></i></button>
+                                <button class="icon-btn delete" onclick="triggerDeletePainter('${p.id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="pc-body">
+                            <div class="stat-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Daily Rate</span>
+                                    <span class="stat-val">₹${p.defaultRate}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Kul Jhadi</span>
+                                    <span class="stat-val">${tJhadi}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Kamai</span>
+                                    <span class="stat-val kamai">₹${tKamai}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Advance</span>
+                                    <span class="stat-val kharcha">₹${tKharcha}</span>
+                                </div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:10px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:15px;">
+                                <span class="stat-label" style="margin:0;">Balance</span>
+                                <span class="stat-val balance" style="color: ${bal>=0?'var(--secondary)':'var(--danger)'}">₹${bal}</span>
+                            </div>
+                            <button class="btn btn-outline" onclick="openLedger('${p.id}')">
+                                <i class="fas fa-book-open"></i> Hissab Kholein
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            updateDashboard(globJhadiCount, globKamai, globKharcha);
+        }
+
+        function updateDashboard(jhadi, kamai, kharcha) {
+            document.getElementById('sumJhadiCount').innerText = jhadi;
+            document.getElementById('sumKamai').innerText = '₹' + kamai.toLocaleString('en-IN');
+            document.getElementById('sumKharcha').innerText = '₹' + kharcha.toLocaleString('en-IN');
+            
+            let bal = kamai - kharcha;
+            const balEl = document.getElementById('sumBalance');
+            balEl.innerText = '₹' + bal.toLocaleString('en-IN');
+            balEl.style.color = bal >= 0 ? 'var(--secondary)' : 'var(--danger)';
+        }
+
+        // --- Ledger History Logic ---
+        function openLedger(id) {
+            const p = painters.find(x => x.id === id);
+            if(!p) return;
+            document.getElementById('activePainterId').value = p.id;
+            document.getElementById('ledgerPainterName').innerHTML = `<i class="fas fa-book"></i> ${p.name}`;
+            renderLedgerHistory(p);
+            openModal('ledgerModal');
+        }
+
+        document.getElementById('dailyEntryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const pId = document.getElementById('activePainterId').value;
+            const pIdx = painters.findIndex(x => x.id === pId);
+            if(pIdx === -1) return;
+
+            const date = document.getElementById('d_date').value;
+            const jhadi = parseFloat(document.getElementById('d_jhadi').value);
+            const kharcha = parseFloat(document.getElementById('d_kharcha').value) || 0;
+            const jhadiValue = jhadi * painters[pIdx].defaultRate;
+
+            painters[pIdx].records.unshift({ r_id: Date.now(), date, jhadi, kharcha, jhadiValue });
+            saveData();
+            
+            renderLedgerHistory(painters[pIdx]);
+            
+            document.getElementById('d_kharcha').value = 0;
+            document.getElementById('d_jhadi').value = "1";
+        });
+
+        // Trigger Delete for a specific entry
+        function triggerDeleteEntry(painterId, recordId) {
+            requirePin(() => {
+                const pIdx = painters.findIndex(x => x.id === painterId);
+                if(pIdx > -1) {
+                    painters[pIdx].records = painters[pIdx].records.filter(r => r.r_id !== recordId);
+                    saveData();
+                    renderLedgerHistory(painters[pIdx]); // Refresh inner modal
+                }
+            });
+        }
+
+        function renderLedgerHistory(painter) {
+            const container = document.getElementById('historyListContainer');
+            if(painter.records.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted);">Koi hazri nahi lagi hai.</div>`;
+                document.getElementById('ledgerSummary').innerText = '';
+                return;
+            }
+
+            let html = '';
+            let tK = 0, tKh = 0;
+
+            painter.records.forEach(r => {
+                tK += r.jhadiValue; tKh += r.kharcha;
+                const dStr = new Date(r.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short' });
+                
+                // Per entry balance logic for UI display
+                let entryType = '';
+                if(r.jhadi > 0 && r.kharcha > 0) entryType = `Kamai: <span style="color:var(--secondary)">₹${r.jhadiValue}</span> | Adv: <span style="color:var(--danger)">₹${r.kharcha}</span>`;
+                else if (r.jhadi > 0) entryType = `<span style="color:var(--secondary)">Kamai: ₹${r.jhadiValue}</span>`;
+                else if (r.kharcha > 0) entryType = `<span style="color:var(--danger)">Advance: ₹${r.kharcha}</span>`;
+                else entryType = 'Absent (0)';
+
+                html += `
+                    <div class="history-item">
+                        <div>
+                            <div class="h-date">${dStr}</div>
+                            <div class="h-info">${r.jhadi} Jhadi • ${entryType}</div>
+                        </div>
+                        <button class="h-delete" onclick="triggerDeleteEntry('${painter.id}', ${r.r_id})">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            let bal = tK - tKh;
+            document.getElementById('ledgerSummary').innerHTML = `<span style="color: ${bal>=0?'var(--secondary)':'var(--danger)'}">₹${bal}</span>`;
+        }
+    </script>
+</body>
+</html>
